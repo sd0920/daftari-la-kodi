@@ -1,0 +1,1355 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  #daftari-root {
+    --bg: #EFEAE0;
+    --bg-alt: #E4DCC6;
+    --card: #FBF9F3;
+    --ink: #1C2B26;
+    --ink-soft: #55645D;
+    --border: #D8CFB5;
+    --gold: #A9822C;
+    --gold-deep: #7C5F1F;
+    --paid: #2F6B4F;
+    --paid-bg: #E4EFE7;
+    --partial: #A9822C;
+    --partial-bg: #F5EDDA;
+    --unpaid: #A8422F;
+    --unpaid-bg: #F5E4DF;
+
+    font-family: 'Work Sans', sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    border-radius: 14px;
+    padding: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  #daftari-root * { box-sizing: border-box; }
+
+  .db-header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 22px 24px 18px;
+    border-radius: 14px 14px 0 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .db-header::after {
+    content: "";
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 140px; height: 140px;
+    border: 2px solid rgba(233,213,150,0.18);
+    border-radius: 50%;
+  }
+  .db-title {
+    font-family: 'Lora', serif;
+    font-weight: 700;
+    font-size: 22px;
+    margin: 0;
+    letter-spacing: 0.2px;
+  }
+  .db-sub {
+    font-size: 13px;
+    color: #C9C2AE;
+    margin-top: 4px;
+  }
+
+  .db-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-alt);
+    padding: 6px;
+    overflow-x: auto;
+  }
+  .db-tab {
+    flex: 1;
+    min-width: 90px;
+    text-align: center;
+    padding: 10px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-family: 'Work Sans', sans-serif;
+    white-space: nowrap;
+  }
+  .db-tab.active {
+    background: var(--card);
+    color: var(--gold-deep);
+    box-shadow: 0 1px 3px rgba(28,43,38,0.12);
+  }
+
+  .db-body {
+    padding: 18px 20px 24px;
+    background: var(--bg);
+  }
+
+  .db-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .db-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .db-card-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .db-card-label {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  .db-section-title {
+    font-family: 'Lora', serif;
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .db-month-picker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--card);
+    color: var(--ink);
+  }
+
+  .db-table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  table.db-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.db-table th {
+    text-align: left;
+    padding: 9px 12px;
+    background: var(--bg-alt);
+    color: var(--ink-soft);
+    font-weight: 600;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  table.db-table td {
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  table.db-table tr:hover td { background: #F5F2E9; }
+
+  .db-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .badge-paid { background: var(--paid-bg); color: var(--paid); }
+  .badge-partial { background: var(--partial-bg); color: var(--partial); }
+  .badge-unpaid { background: var(--unpaid-bg); color: var(--unpaid); }
+  .badge-left { background: #E7E2D3; color: var(--ink-soft); }
+
+  .db-btn {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    padding: 7px 13px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    background: var(--ink);
+    color: var(--bg);
+    transition: opacity 0.15s;
+  }
+  .db-btn:hover { opacity: 0.85; }
+  .db-btn.secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink);
+  }
+  .db-btn.danger {
+    background: transparent;
+    color: var(--unpaid);
+    border: 1px solid var(--unpaid-bg);
+  }
+  .db-btn.small { padding: 5px 10px; font-size: 11.5px; }
+
+  .db-form {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 18px;
+  }
+  .db-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .db-field label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .db-field input, .db-field select, .db-field textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: 'Work Sans', sans-serif;
+    background: #fff;
+    color: var(--ink);
+  }
+  .db-field input:focus, .db-field select:focus, .db-field textarea:focus {
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+  }
+
+  .db-empty {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--ink-soft);
+    font-size: 13.5px;
+  }
+
+  .db-search {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 13px;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--card);
+    color: var(--ink);
+    width: 100%;
+    max-width: 280px;
+  }
+  .db-search:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+  .db-mono { font-family: 'IBM Plex Mono', monospace; }
+  .db-actions-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .db-toast {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 9px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    z-index: 100;
+  }
+  .db-toast.show { opacity: 1; }
+
+  @media (max-width: 480px) {
+    table.db-table { font-size: 12px; }
+    table.db-table th, table.db-table td { padding: 7px 8px; }
+  }
+</style>
+
+<div id="daftari-root">
+  <div class="db-header">
+    <p class="db-title">Daftari la Kodi</p>
+    <p class="db-sub">Fuatilia nyumba, wapangaji na malipo ya kila mwezi</p>
+  </div>
+  <div class="db-tabs" id="db-tabs"></div>
+  <div class="db-body" id="db-body"></div>
+</div>
+<div class="db-toast" id="db-toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAdmoruLuoUpgSttHH3taeXjBPxFIkjxCM",
+    authDomain: "daftari-la-kodi.firebaseapp.com",
+    projectId: "daftari-la-kodi",
+    storageBucket: "daftari-la-kodi.firebasestorage.app",
+    messagingSenderId: "183902620802",
+    appId: "1:183902620802:web:465774a0e636fcc76d389b"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
+<script>
+const IMPORT_DATA = {"properties":[{"id":"prop_dar","name":"Nyumba Dar"},{"id":"prop_mpya","name":"Nyumba Mpya"}],"rooms":[{"id":"room_No01","name":"No. 01","propertyId":"prop_dar"},{"id":"room_No02","name":"No. 02","propertyId":"prop_dar"},{"id":"room_No03","name":"No. 03","propertyId":"prop_dar"},{"id":"room_No04","name":"No. 04","propertyId":"prop_dar"},{"id":"room_No05","name":"No. 05","propertyId":"prop_dar"},{"id":"room_No06","name":"No. 06","propertyId":"prop_dar"},{"id":"room_No07","name":"No. 07","propertyId":"prop_dar"},{"id":"room_No08","name":"No. 08","propertyId":"prop_dar"},{"id":"room_No09","name":"No. 09","propertyId":"prop_dar"},{"id":"room_No10","name":"No. 10","propertyId":"prop_dar"},{"id":"room_No11","name":"No. 11","propertyId":"prop_dar"},{"id":"room_No12","name":"No. 12","propertyId":"prop_dar"},{"id":"room_No13","name":"No. 13","propertyId":"prop_dar"},{"id":"room_No14","name":"No. 14","propertyId":"prop_dar"},{"id":"room_No15","name":"No. 15","propertyId":"prop_dar"},{"id":"room_No16","name":"No. 16","propertyId":"prop_dar"},{"id":"room_No17","name":"No. 17","propertyId":"prop_dar"},{"id":"room_No18","name":"No. 18","propertyId":"prop_dar"},{"id":"room_No19","name":"No. 19","propertyId":"prop_dar"},{"id":"room_No20","name":"No. 20","propertyId":"prop_dar"},{"id":"room_No21","name":"No. 21","propertyId":"prop_dar"},{"id":"room_No22","name":"No. 22","propertyId":"prop_dar"},{"id":"room_No23","name":"No. 23","propertyId":"prop_dar"},{"id":"room_No24","name":"No. 24","propertyId":"prop_dar"},{"id":"room_No25","name":"No. 25","propertyId":"prop_dar"},{"id":"room_No26","name":"No. 26","propertyId":"prop_dar"},{"id":"room_No27","name":"No. 27","propertyId":"prop_dar"},{"id":"room_No28","name":"No. 28","propertyId":"prop_dar"},{"id":"room_No29","name":"No. 29","propertyId":"prop_dar"},{"id":"room_No30","name":"No. 30","propertyId":"prop_dar"},{"id":"room_No31","name":"No. 31","propertyId":"prop_dar"},{"id":"room_No32","name":"No. 32","propertyId":"prop_dar"},{"id":"room_No33","name":"No. 33","propertyId":"prop_mpya"},{"id":"room_No34","name":"No. 34","propertyId":"prop_mpya"},{"id":"room_No35","name":"No. 35","propertyId":"prop_mpya"},{"id":"room_No36","name":"No. 36","propertyId":"prop_mpya"},{"id":"room_No37","name":"No. 37","propertyId":"prop_mpya"},{"id":"room_No38","name":"No. 38","propertyId":"prop_mpya"},{"id":"room_No39","name":"No. 39","propertyId":"prop_mpya"},{"id":"room_No40","name":"No. 40","propertyId":"prop_mpya"}],"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYONI","phone":"0777943479","roomId":"room_No01","rentAmount":"70000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No02","name":"ANGELIKAE DWIN","phone":"","roomId":"room_No02","rentAmount":"30000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No03","name":"MWAJUMA SHABANI","phone":"0688389592","roomId":"room_No03","rentAmount":"30000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No04","name":"ATHUMANI","phone":"0659260543","roomId":"room_No04","rentAmount":"30000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No05","name":"EDGA OCTAVIAN","phone":"06586335512","roomId":"room_No05","rentAmount":"50000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No06","name":"JENIPHA JULIUS","phone":"0747685916","roomId":"room_No06","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No07","name":"MARTHA MKURYA","phone":"0759097258","roomId":"room_No07","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No08","name":"MATUNDA","phone":"0787494388","roomId":"room_No08","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No09","name":"AYUBU ESAHU","phone":"0792926473","roomId":"room_No09","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No10","name":"JOSEPH ERASTO","phone":"0759474871","roomId":"room_No10","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No11","name":"HAMISI 1","phone":"0625442120","roomId":"room_No11","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No12","name":"HAMISI 2","phone":"0672602961","roomId":"room_No12","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No13","name":"AGNESS NDALANDEFU","phone":"0693261267","roomId":"room_No13","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No14","name":"NELISON JULIUS","phone":"0750659130","roomId":"room_No14","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No15","name":"REDEMTA JUMA","phone":"0754912428","roomId":"room_No15","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No16","name":"YUSUPH ABDARAH","phone":"0663403500","roomId":"room_No16","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No17","name":"DEVID MPANGALA","phone":"0692380088","roomId":"room_No17","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No18","name":"ABDARAH MOHAMED","phone":"0692687094","roomId":"room_No18","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No19","name":"ROSEMARY DIDAS","phone":"0769657853","roomId":"room_No19","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No20","name":"JAMES","phone":"0787494024","roomId":"room_No20","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No21","name":"MARISIANA NKWABI","phone":"0788590802","roomId":"room_No21","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No22","name":"MAHEMBA MKAMI","phone":"0676213608","roomId":"room_No22","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No23","name":"JONSON ZOMBI","phone":"0775446673","roomId":"room_No23","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No24","name":"ISAYA NYILATU","phone":"","roomId":"room_No24","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No25","name":"JUMA RAJABU","phone":"","roomId":"room_No25","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No26","name":"ASKARI","phone":"","roomId":"room_No26","rentAmount":"25000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No27","name":"AYUBU CHARLES","phone":"0670642267","roomId":"room_No27","rentAmount":"60000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No28","name":"ZAITUNI RASHIDI","phone":"0680985452","roomId":"room_No28","rentAmount":"70000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No29","name":"BABA SALUMU","phone":"","roomId":"room_No29","rentAmount":"70000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No30","name":"ZAINABU BAKARI","phone":"","roomId":"room_No30","rentAmount":"60000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No31","name":"MOHAMED SELEMANI","phone":"","roomId":"room_No31","rentAmount":"30000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No32","name":"KASIMU BULIANI","phone":"0658943523","roomId":"room_No32","rentAmount":"30000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No33","name":"TONY","phone":"0755540890","roomId":"room_No33","rentAmount":"50000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No34","name":"JENIPHA JUMANNE GULAKA","phone":"0683669315","roomId":"room_No34","rentAmount":"50000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No35","name":"RHODA YASINI","phone":"0617954725","roomId":"room_No35","rentAmount":"50000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No36","name":"JOSEPH BAHATI","phone":"0693583111","roomId":"room_No36","rentAmount":"50000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No37","name":"WITNESS ADRIAN","phone":"0750973340","roomId":"room_No37","rentAmount":"50000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No38","name":"AGREY TAJACK","phone":"0798642648","roomId":"room_No38","rentAmount":"50000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No39","name":"GABRIEL MECKSONI NYIGI","phone":"0763913084","roomId":"room_No39","rentAmount":"50000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""},{"id":"tenant_room_No40","name":"B0DABODA","phone":"","roomId":"room_No40","rentAmount":"50000","moveInDate":"2026-01-01","notes":"","status":"active","moveOutDate":""}],"payments":[{"id":"pay_tenant_room_No01_01","tenantId":"tenant_room_No01","roomId":"room_No01","date":"2026-01-01","forMonth":"2026-01","amount":"70000","notes":""},{"id":"pay_tenant_room_No01_05","tenantId":"tenant_room_No01","roomId":"room_No01","date":"2026-05-01","forMonth":"2026-05","amount":"35000","notes":""},{"id":"pay_tenant_room_No01_06","tenantId":"tenant_room_No01","roomId":"room_No01","date":"2026-06-01","forMonth":"2026-06","amount":"70000","notes":""},{"id":"pay_tenant_room_No01_07","tenantId":"tenant_room_No01","roomId":"room_No01","date":"2026-07-01","forMonth":"2026-07","amount":"20000","notes":""},{"id":"pay_tenant_room_No03_01","tenantId":"tenant_room_No03","roomId":"room_No03","date":"2026-01-01","forMonth":"2026-01","amount":"30000","notes":""},{"id":"pay_tenant_room_No03_02","tenantId":"tenant_room_No03","roomId":"room_No03","date":"2026-02-01","forMonth":"2026-02","amount":"30000","notes":""},{"id":"pay_tenant_room_No03_03","tenantId":"tenant_room_No03","roomId":"room_No03","date":"2026-03-01","forMonth":"2026-03","amount":"30000","notes":""},{"id":"pay_tenant_room_No03_04","tenantId":"tenant_room_No03","roomId":"room_No03","date":"2026-04-01","forMonth":"2026-04","amount":"30000","notes":""},{"id":"pay_tenant_room_No04_01","tenantId":"tenant_room_No04","roomId":"room_No04","date":"2026-01-01","forMonth":"2026-01","amount":"30000","notes":""},{"id":"pay_tenant_room_No04_02","tenantId":"tenant_room_No04","roomId":"room_No04","date":"2026-02-01","forMonth":"2026-02","amount":"20000","notes":""},{"id":"pay_tenant_room_No05_01","tenantId":"tenant_room_No05","roomId":"room_No05","date":"2026-01-01","forMonth":"2026-01","amount":"50000","notes":""},{"id":"pay_tenant_room_No05_02","tenantId":"tenant_room_No05","roomId":"room_No05","date":"2026-02-01","forMonth":"2026-02","amount":"50000","notes":""},{"id":"pay_tenant_room_No05_03","tenantId":"tenant_room_No05","roomId":"room_No05","date":"2026-03-01","forMonth":"2026-03","amount":"50000","notes":""},{"id":"pay_tenant_room_No06_01","tenantId":"tenant_room_No06","roomId":"room_No06","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No06_02","tenantId":"tenant_room_No06","roomId":"room_No06","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No06_03","tenantId":"tenant_room_No06","roomId":"room_No06","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No06_04","tenantId":"tenant_room_No06","roomId":"room_No06","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No06_05","tenantId":"tenant_room_No06","roomId":"room_No06","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No06_06","tenantId":"tenant_room_No06","roomId":"room_No06","date":"2026-06-01","forMonth":"2026-06","amount":"25000","notes":""},{"id":"pay_tenant_room_No06_07","tenantId":"tenant_room_No06","roomId":"room_No06","date":"2026-07-01","forMonth":"2026-07","amount":"25000","notes":""},{"id":"pay_tenant_room_No06_08","tenantId":"tenant_room_No06","roomId":"room_No06","date":"2026-08-01","forMonth":"2026-08","amount":"25000","notes":""},{"id":"pay_tenant_room_No07_01","tenantId":"tenant_room_No07","roomId":"room_No07","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No07_02","tenantId":"tenant_room_No07","roomId":"room_No07","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No07_03","tenantId":"tenant_room_No07","roomId":"room_No07","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No07_04","tenantId":"tenant_room_No07","roomId":"room_No07","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No07_05","tenantId":"tenant_room_No07","roomId":"room_No07","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No07_06","tenantId":"tenant_room_No07","roomId":"room_No07","date":"2026-06-01","forMonth":"2026-06","amount":"25000","notes":""},{"id":"pay_tenant_room_No08_01","tenantId":"tenant_room_No08","roomId":"room_No08","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No08_02","tenantId":"tenant_room_No08","roomId":"room_No08","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No08_03","tenantId":"tenant_room_No08","roomId":"room_No08","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No08_04","tenantId":"tenant_room_No08","roomId":"room_No08","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No09_01","tenantId":"tenant_room_No09","roomId":"room_No09","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No09_02","tenantId":"tenant_room_No09","roomId":"room_No09","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No09_03","tenantId":"tenant_room_No09","roomId":"room_No09","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No09_04","tenantId":"tenant_room_No09","roomId":"room_No09","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No09_05","tenantId":"tenant_room_No09","roomId":"room_No09","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No09_06","tenantId":"tenant_room_No09","roomId":"room_No09","date":"2026-06-01","forMonth":"2026-06","amount":"25000","notes":""},{"id":"pay_tenant_room_No10_01","tenantId":"tenant_room_No10","roomId":"room_No10","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No10_02","tenantId":"tenant_room_No10","roomId":"room_No10","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No10_03","tenantId":"tenant_room_No10","roomId":"room_No10","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No10_04","tenantId":"tenant_room_No10","roomId":"room_No10","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No10_05","tenantId":"tenant_room_No10","roomId":"room_No10","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No13_01","tenantId":"tenant_room_No13","roomId":"room_No13","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No13_02","tenantId":"tenant_room_No13","roomId":"room_No13","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No13_03","tenantId":"tenant_room_No13","roomId":"room_No13","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No13_04","tenantId":"tenant_room_No13","roomId":"room_No13","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No13_05","tenantId":"tenant_room_No13","roomId":"room_No13","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No13_06","tenantId":"tenant_room_No13","roomId":"room_No13","date":"2026-06-01","forMonth":"2026-06","amount":"25000","notes":""},{"id":"pay_tenant_room_No14_01","tenantId":"tenant_room_No14","roomId":"room_No14","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No14_02","tenantId":"tenant_room_No14","roomId":"room_No14","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No14_03","tenantId":"tenant_room_No14","roomId":"room_No14","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No14_04","tenantId":"tenant_room_No14","roomId":"room_No14","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No14_05","tenantId":"tenant_room_No14","roomId":"room_No14","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No15_01","tenantId":"tenant_room_No15","roomId":"room_No15","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No15_02","tenantId":"tenant_room_No15","roomId":"room_No15","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No15_03","tenantId":"tenant_room_No15","roomId":"room_No15","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No15_04","tenantId":"tenant_room_No15","roomId":"room_No15","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No16_01","tenantId":"tenant_room_No16","roomId":"room_No16","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No16_02","tenantId":"tenant_room_No16","roomId":"room_No16","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No16_03","tenantId":"tenant_room_No16","roomId":"room_No16","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No16_04","tenantId":"tenant_room_No16","roomId":"room_No16","date":"2026-04-01","forMonth":"2026-04","amount":"15000","notes":""},{"id":"pay_tenant_room_No17_01","tenantId":"tenant_room_No17","roomId":"room_No17","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No17_02","tenantId":"tenant_room_No17","roomId":"room_No17","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No17_03","tenantId":"tenant_room_No17","roomId":"room_No17","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No17_04","tenantId":"tenant_room_No17","roomId":"room_No17","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No18_01","tenantId":"tenant_room_No18","roomId":"room_No18","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No18_02","tenantId":"tenant_room_No18","roomId":"room_No18","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No18_03","tenantId":"tenant_room_No18","roomId":"room_No18","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No18_04","tenantId":"tenant_room_No18","roomId":"room_No18","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No18_05","tenantId":"tenant_room_No18","roomId":"room_No18","date":"2026-05-01","forMonth":"2026-05","amount":"20000","notes":""},{"id":"pay_tenant_room_No19_01","tenantId":"tenant_room_No19","roomId":"room_No19","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No19_02","tenantId":"tenant_room_No19","roomId":"room_No19","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No19_03","tenantId":"tenant_room_No19","roomId":"room_No19","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No19_04","tenantId":"tenant_room_No19","roomId":"room_No19","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No19_05","tenantId":"tenant_room_No19","roomId":"room_No19","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No19_06","tenantId":"tenant_room_No19","roomId":"room_No19","date":"2026-06-01","forMonth":"2026-06","amount":"25000","notes":""},{"id":"pay_tenant_room_No19_07","tenantId":"tenant_room_No19","roomId":"room_No19","date":"2026-07-01","forMonth":"2026-07","amount":"25000","notes":""},{"id":"pay_tenant_room_No19_08","tenantId":"tenant_room_No19","roomId":"room_No19","date":"2026-08-01","forMonth":"2026-08","amount":"25000","notes":""},{"id":"pay_tenant_room_No20_01","tenantId":"tenant_room_No20","roomId":"room_No20","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No20_02","tenantId":"tenant_room_No20","roomId":"room_No20","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No20_03","tenantId":"tenant_room_No20","roomId":"room_No20","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No20_04","tenantId":"tenant_room_No20","roomId":"room_No20","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No20_05","tenantId":"tenant_room_No20","roomId":"room_No20","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No20_06","tenantId":"tenant_room_No20","roomId":"room_No20","date":"2026-06-01","forMonth":"2026-06","amount":"25000","notes":""},{"id":"pay_tenant_room_No20_07","tenantId":"tenant_room_No20","roomId":"room_No20","date":"2026-07-01","forMonth":"2026-07","amount":"25000","notes":""},{"id":"pay_tenant_room_No21_01","tenantId":"tenant_room_No21","roomId":"room_No21","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No21_02","tenantId":"tenant_room_No21","roomId":"room_No21","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No21_03","tenantId":"tenant_room_No21","roomId":"room_No21","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No21_04","tenantId":"tenant_room_No21","roomId":"room_No21","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No21_05","tenantId":"tenant_room_No21","roomId":"room_No21","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No21_06","tenantId":"tenant_room_No21","roomId":"room_No21","date":"2026-06-01","forMonth":"2026-06","amount":"25000","notes":""},{"id":"pay_tenant_room_No21_07","tenantId":"tenant_room_No21","roomId":"room_No21","date":"2026-07-01","forMonth":"2026-07","amount":"25000","notes":""},{"id":"pay_tenant_room_No22_01","tenantId":"tenant_room_No22","roomId":"room_No22","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No22_02","tenantId":"tenant_room_No22","roomId":"room_No22","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No22_03","tenantId":"tenant_room_No22","roomId":"room_No22","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No22_04","tenantId":"tenant_room_No22","roomId":"room_No22","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No22_05","tenantId":"tenant_room_No22","roomId":"room_No22","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No22_06","tenantId":"tenant_room_No22","roomId":"room_No22","date":"2026-06-01","forMonth":"2026-06","amount":"25000","notes":""},{"id":"pay_tenant_room_No23_01","tenantId":"tenant_room_No23","roomId":"room_No23","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No23_02","tenantId":"tenant_room_No23","roomId":"room_No23","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No23_03","tenantId":"tenant_room_No23","roomId":"room_No23","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No23_04","tenantId":"tenant_room_No23","roomId":"room_No23","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No23_05","tenantId":"tenant_room_No23","roomId":"room_No23","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No24_01","tenantId":"tenant_room_No24","roomId":"room_No24","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No24_02","tenantId":"tenant_room_No24","roomId":"room_No24","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No24_03","tenantId":"tenant_room_No24","roomId":"room_No24","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No24_04","tenantId":"tenant_room_No24","roomId":"room_No24","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No24_05","tenantId":"tenant_room_No24","roomId":"room_No24","date":"2026-05-01","forMonth":"2026-05","amount":"20000","notes":""},{"id":"pay_tenant_room_No25_01","tenantId":"tenant_room_No25","roomId":"room_No25","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No25_02","tenantId":"tenant_room_No25","roomId":"room_No25","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No25_03","tenantId":"tenant_room_No25","roomId":"room_No25","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No25_04","tenantId":"tenant_room_No25","roomId":"room_No25","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No25_05","tenantId":"tenant_room_No25","roomId":"room_No25","date":"2026-05-01","forMonth":"2026-05","amount":"20000","notes":""},{"id":"pay_tenant_room_No26_01","tenantId":"tenant_room_No26","roomId":"room_No26","date":"2026-01-01","forMonth":"2026-01","amount":"25000","notes":""},{"id":"pay_tenant_room_No26_02","tenantId":"tenant_room_No26","roomId":"room_No26","date":"2026-02-01","forMonth":"2026-02","amount":"25000","notes":""},{"id":"pay_tenant_room_No26_03","tenantId":"tenant_room_No26","roomId":"room_No26","date":"2026-03-01","forMonth":"2026-03","amount":"25000","notes":""},{"id":"pay_tenant_room_No26_04","tenantId":"tenant_room_No26","roomId":"room_No26","date":"2026-04-01","forMonth":"2026-04","amount":"25000","notes":""},{"id":"pay_tenant_room_No26_05","tenantId":"tenant_room_No26","roomId":"room_No26","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No26_06","tenantId":"tenant_room_No26","roomId":"room_No26","date":"2026-06-01","forMonth":"2026-06","amount":"25000","notes":""},{"id":"pay_tenant_room_No26_07","tenantId":"tenant_room_No26","roomId":"room_No26","date":"2026-07-01","forMonth":"2026-07","amount":"25000","notes":""},{"id":"pay_tenant_room_No27_01","tenantId":"tenant_room_No27","roomId":"room_No27","date":"2026-01-01","forMonth":"2026-01","amount":"60000","notes":""},{"id":"pay_tenant_room_No27_02","tenantId":"tenant_room_No27","roomId":"room_No27","date":"2026-02-01","forMonth":"2026-02","amount":"60000","notes":""},{"id":"pay_tenant_room_No27_03","tenantId":"tenant_room_No27","roomId":"room_No27","date":"2026-03-01","forMonth":"2026-03","amount":"60000","notes":""},{"id":"pay_tenant_room_No27_04","tenantId":"tenant_room_No27","roomId":"room_No27","date":"2026-04-01","forMonth":"2026-04","amount":"60000","notes":""},{"id":"pay_tenant_room_No27_05","tenantId":"tenant_room_No27","roomId":"room_No27","date":"2026-05-01","forMonth":"2026-05","amount":"60000","notes":""},{"id":"pay_tenant_room_No27_06","tenantId":"tenant_room_No27","roomId":"room_No27","date":"2026-06-01","forMonth":"2026-06","amount":"60000","notes":""},{"id":"pay_tenant_room_No28_01","tenantId":"tenant_room_No28","roomId":"room_No28","date":"2026-01-01","forMonth":"2026-01","amount":"50000","notes":""},{"id":"pay_tenant_room_No28_02","tenantId":"tenant_room_No28","roomId":"room_No28","date":"2026-02-01","forMonth":"2026-02","amount":"70000","notes":""},{"id":"pay_tenant_room_No28_03","tenantId":"tenant_room_No28","roomId":"room_No28","date":"2026-03-01","forMonth":"2026-03","amount":"70000","notes":""},{"id":"pay_tenant_room_No28_04","tenantId":"tenant_room_No28","roomId":"room_No28","date":"2026-04-01","forMonth":"2026-04","amount":"70000","notes":""},{"id":"pay_tenant_room_No29_01","tenantId":"tenant_room_No29","roomId":"room_No29","date":"2026-01-01","forMonth":"2026-01","amount":"70000","notes":""},{"id":"pay_tenant_room_No29_02","tenantId":"tenant_room_No29","roomId":"room_No29","date":"2026-02-01","forMonth":"2026-02","amount":"40000","notes":""},{"id":"pay_tenant_room_No30_05","tenantId":"tenant_room_No30","roomId":"room_No30","date":"2026-05-01","forMonth":"2026-05","amount":"60000","notes":""},{"id":"pay_tenant_room_No30_06","tenantId":"tenant_room_No30","roomId":"room_No30","date":"2026-06-01","forMonth":"2026-06","amount":"60000","notes":""},{"id":"pay_tenant_room_No31_01","tenantId":"tenant_room_No31","roomId":"room_No31","date":"2026-01-01","forMonth":"2026-01","amount":"30000","notes":""},{"id":"pay_tenant_room_No31_02","tenantId":"tenant_room_No31","roomId":"room_No31","date":"2026-02-01","forMonth":"2026-02","amount":"30000","notes":""},{"id":"pay_tenant_room_No31_03","tenantId":"tenant_room_No31","roomId":"room_No31","date":"2026-03-01","forMonth":"2026-03","amount":"30000","notes":""},{"id":"pay_tenant_room_No31_04","tenantId":"tenant_room_No31","roomId":"room_No31","date":"2026-04-01","forMonth":"2026-04","amount":"30000","notes":""},{"id":"pay_tenant_room_No31_05","tenantId":"tenant_room_No31","roomId":"room_No31","date":"2026-05-01","forMonth":"2026-05","amount":"30000","notes":""},{"id":"pay_tenant_room_No32_01","tenantId":"tenant_room_No32","roomId":"room_No32","date":"2026-01-01","forMonth":"2026-01","amount":"30000","notes":""},{"id":"pay_tenant_room_No32_02","tenantId":"tenant_room_No32","roomId":"room_No32","date":"2026-02-01","forMonth":"2026-02","amount":"30000","notes":""},{"id":"pay_tenant_room_No32_03","tenantId":"tenant_room_No32","roomId":"room_No32","date":"2026-03-01","forMonth":"2026-03","amount":"30000","notes":""},{"id":"pay_tenant_room_No32_04","tenantId":"tenant_room_No32","roomId":"room_No32","date":"2026-04-01","forMonth":"2026-04","amount":"30000","notes":""},{"id":"pay_tenant_room_No32_05","tenantId":"tenant_room_No32","roomId":"room_No32","date":"2026-05-01","forMonth":"2026-05","amount":"30000","notes":""},{"id":"pay_tenant_room_No32_06","tenantId":"tenant_room_No32","roomId":"room_No32","date":"2026-06-01","forMonth":"2026-06","amount":"30000","notes":""},{"id":"pay_tenant_room_No32_07","tenantId":"tenant_room_No32","roomId":"room_No32","date":"2026-07-01","forMonth":"2026-07","amount":"30000","notes":""},{"id":"pay_tenant_room_No32_08","tenantId":"tenant_room_No32","roomId":"room_No32","date":"2026-08-01","forMonth":"2026-08","amount":"30000","notes":""},{"id":"pay_tenant_room_No33_01","tenantId":"tenant_room_No33","roomId":"room_No33","date":"2026-01-01","forMonth":"2026-01","amount":"50000","notes":""},{"id":"pay_tenant_room_No33_02","tenantId":"tenant_room_No33","roomId":"room_No33","date":"2026-02-01","forMonth":"2026-02","amount":"50000","notes":""},{"id":"pay_tenant_room_No33_03","tenantId":"tenant_room_No33","roomId":"room_No33","date":"2026-03-01","forMonth":"2026-03","amount":"50000","notes":""},{"id":"pay_tenant_room_No33_04","tenantId":"tenant_room_No33","roomId":"room_No33","date":"2026-04-01","forMonth":"2026-04","amount":"50000","notes":""},{"id":"pay_tenant_room_No33_05","tenantId":"tenant_room_No33","roomId":"room_No33","date":"2026-05-01","forMonth":"2026-05","amount":"50000","notes":""},{"id":"pay_tenant_room_No33_06","tenantId":"tenant_room_No33","roomId":"room_No33","date":"2026-06-01","forMonth":"2026-06","amount":"50000","notes":""},{"id":"pay_tenant_room_No33_07","tenantId":"tenant_room_No33","roomId":"room_No33","date":"2026-07-01","forMonth":"2026-07","amount":"40000","notes":""},{"id":"pay_tenant_room_No34_01","tenantId":"tenant_room_No34","roomId":"room_No34","date":"2026-01-01","forMonth":"2026-01","amount":"50000","notes":""},{"id":"pay_tenant_room_No34_02","tenantId":"tenant_room_No34","roomId":"room_No34","date":"2026-02-01","forMonth":"2026-02","amount":"50000","notes":""},{"id":"pay_tenant_room_No34_03","tenantId":"tenant_room_No34","roomId":"room_No34","date":"2026-03-01","forMonth":"2026-03","amount":"50000","notes":""},{"id":"pay_tenant_room_No34_04","tenantId":"tenant_room_No34","roomId":"room_No34","date":"2026-04-01","forMonth":"2026-04","amount":"50000","notes":""},{"id":"pay_tenant_room_No34_05","tenantId":"tenant_room_No34","roomId":"room_No34","date":"2026-05-01","forMonth":"2026-05","amount":"20000","notes":""},{"id":"pay_tenant_room_No35_01","tenantId":"tenant_room_No35","roomId":"room_No35","date":"2026-01-01","forMonth":"2026-01","amount":"50000","notes":""},{"id":"pay_tenant_room_No35_02","tenantId":"tenant_room_No35","roomId":"room_No35","date":"2026-02-01","forMonth":"2026-02","amount":"50000","notes":""},{"id":"pay_tenant_room_No35_03","tenantId":"tenant_room_No35","roomId":"room_No35","date":"2026-03-01","forMonth":"2026-03","amount":"40000","notes":""},{"id":"pay_tenant_room_No35_04","tenantId":"tenant_room_No35","roomId":"room_No35","date":"2026-04-01","forMonth":"2026-04","amount":"50000","notes":""},{"id":"pay_tenant_room_No35_05","tenantId":"tenant_room_No35","roomId":"room_No35","date":"2026-05-01","forMonth":"2026-05","amount":"50000","notes":""},{"id":"pay_tenant_room_No36_01","tenantId":"tenant_room_No36","roomId":"room_No36","date":"2026-01-01","forMonth":"2026-01","amount":"50000","notes":""},{"id":"pay_tenant_room_No36_02","tenantId":"tenant_room_No36","roomId":"room_No36","date":"2026-02-01","forMonth":"2026-02","amount":"50000","notes":""},{"id":"pay_tenant_room_No36_03","tenantId":"tenant_room_No36","roomId":"room_No36","date":"2026-03-01","forMonth":"2026-03","amount":"50000","notes":""},{"id":"pay_tenant_room_No37_01","tenantId":"tenant_room_No37","roomId":"room_No37","date":"2026-01-01","forMonth":"2026-01","amount":"50000","notes":""},{"id":"pay_tenant_room_No37_02","tenantId":"tenant_room_No37","roomId":"room_No37","date":"2026-02-01","forMonth":"2026-02","amount":"50000","notes":""},{"id":"pay_tenant_room_No37_03","tenantId":"tenant_room_No37","roomId":"room_No37","date":"2026-03-01","forMonth":"2026-03","amount":"50000","notes":""},{"id":"pay_tenant_room_No37_04","tenantId":"tenant_room_No37","roomId":"room_No37","date":"2026-04-01","forMonth":"2026-04","amount":"50000","notes":""},{"id":"pay_tenant_room_No37_05","tenantId":"tenant_room_No37","roomId":"room_No37","date":"2026-05-01","forMonth":"2026-05","amount":"50000","notes":""},{"id":"pay_tenant_room_No37_06","tenantId":"tenant_room_No37","roomId":"room_No37","date":"2026-06-01","forMonth":"2026-06","amount":"50000","notes":""},{"id":"pay_tenant_room_No38_01","tenantId":"tenant_room_No38","roomId":"room_No38","date":"2026-01-01","forMonth":"2026-01","amount":"50000","notes":""},{"id":"pay_tenant_room_No38_02","tenantId":"tenant_room_No38","roomId":"room_No38","date":"2026-02-01","forMonth":"2026-02","amount":"50000","notes":""},{"id":"pay_tenant_room_No38_03","tenantId":"tenant_room_No38","roomId":"room_No38","date":"2026-03-01","forMonth":"2026-03","amount":"50000","notes":""},{"id":"pay_tenant_room_No38_04","tenantId":"tenant_room_No38","roomId":"room_No38","date":"2026-04-01","forMonth":"2026-04","amount":"50000","notes":""},{"id":"pay_tenant_room_No38_05","tenantId":"tenant_room_No38","roomId":"room_No38","date":"2026-05-01","forMonth":"2026-05","amount":"50000","notes":""},{"id":"pay_tenant_room_No38_06","tenantId":"tenant_room_No38","roomId":"room_No38","date":"2026-06-01","forMonth":"2026-06","amount":"50000","notes":""},{"id":"pay_tenant_room_No38_07","tenantId":"tenant_room_No38","roomId":"room_No38","date":"2026-07-01","forMonth":"2026-07","amount":"50000","notes":""},{"id":"pay_tenant_room_No38_08","tenantId":"tenant_room_No38","roomId":"room_No38","date":"2026-08-01","forMonth":"2026-08","amount":"50000","notes":""},{"id":"pay_tenant_room_No39_01","tenantId":"tenant_room_No39","roomId":"room_No39","date":"2026-01-01","forMonth":"2026-01","amount":"50000","notes":""},{"id":"pay_tenant_room_No39_02","tenantId":"tenant_room_No39","roomId":"room_No39","date":"2026-02-01","forMonth":"2026-02","amount":"50000","notes":""},{"id":"pay_tenant_room_No39_03","tenantId":"tenant_room_No39","roomId":"room_No39","date":"2026-03-01","forMonth":"2026-03","amount":"50000","notes":""},{"id":"pay_tenant_room_No39_04","tenantId":"tenant_room_No39","roomId":"room_No39","date":"2026-04-01","forMonth":"2026-04","amount":"50000","notes":""},{"id":"pay_tenant_room_No39_05","tenantId":"tenant_room_No39","roomId":"room_No39","date":"2026-05-01","forMonth":"2026-05","amount":"25000","notes":""},{"id":"pay_tenant_room_No39_06","tenantId":"tenant_room_No39","roomId":"room_No39","date":"2026-06-01","forMonth":"2026-06","amount":"50000","notes":""},{"id":"pay_tenant_room_No39_07","tenantId":"tenant_room_No39","roomId":"room_No39","date":"2026-07-01","forMonth":"2026-07","amount":"50000","notes":""},{"id":"pay_tenant_room_No39_08","tenantId":"tenant_room_No39","roomId":"room_No39","date":"2026-08-01","forMonth":"2026-08","amount":"50000","notes":""},{"id":"pay_tenant_room_No39_09","tenantId":"tenant_room_No39","roomId":"room_No39","date":"2026-09-01","forMonth":"2026-09","amount":"50000","notes":""},{"id":"pay_tenant_room_No39_10","tenantId":"tenant_room_No39","roomId":"room_No39","date":"2026-10-01","forMonth":"2026-10","amount":"50000","notes":""},{"id":"pay_tenant_room_No40_01","tenantId":"tenant_room_No40","roomId":"room_No40","date":"2026-01-01","forMonth":"2026-01","amount":"50000","notes":""}]};
+const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":70000,"04":70000,"05":70000,"06":70000,"07":20000},"tenant_room_No02":{},"tenant_room_No03":{"01":30000,"02":30000,"03":30000,"04":30000},"tenant_room_No04":{"01":30000,"02":20000},"tenant_room_No05":{"01":50000,"02":50000,"03":50000},"tenant_room_No06":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000,"06":25000,"07":25000,"08":25000},"tenant_room_No07":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000,"06":25000},"tenant_room_No08":{"01":25000,"02":25000,"03":25000,"04":25000},"tenant_room_No09":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000,"06":25000},"tenant_room_No10":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000},"tenant_room_No11":{},"tenant_room_No12":{},"tenant_room_No13":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000,"06":25000},"tenant_room_No14":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000},"tenant_room_No15":{"01":25000,"02":25000,"03":25000,"04":25000},"tenant_room_No16":{"01":25000,"02":25000,"03":25000,"04":15000},"tenant_room_No17":{"01":25000,"02":25000,"03":25000,"04":25000},"tenant_room_No18":{"01":25000,"02":25000,"03":25000,"04":25000,"05":20000},"tenant_room_No19":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000,"06":25000,"07":25000,"08":25000},"tenant_room_No20":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000,"06":25000,"07":25000},"tenant_room_No21":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000,"06":25000,"07":25000},"tenant_room_No22":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000,"06":25000},"tenant_room_No23":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000},"tenant_room_No24":{"01":25000,"02":25000,"03":25000,"04":25000,"05":20000},"tenant_room_No25":{"01":25000,"02":25000,"03":25000,"04":25000,"05":20000},"tenant_room_No26":{"01":25000,"02":25000,"03":25000,"04":25000,"05":25000,"06":25000,"07":25000},"tenant_room_No27":{"01":60000,"02":60000,"03":60000,"04":60000,"05":60000,"06":60000},"tenant_room_No28":{"01":50000,"02":70000,"03":70000,"04":70000},"tenant_room_No29":{"01":70000,"02":40000},"tenant_room_No30":{"01":60000,"02":60000,"03":60000,"04":60000,"05":60000,"06":60000},"tenant_room_No31":{"01":30000,"02":30000,"03":30000,"04":30000,"05":30000},"tenant_room_No32":{"01":30000,"02":30000,"03":30000,"04":30000,"05":30000,"06":30000,"07":30000,"08":30000},"tenant_room_No33":{"01":50000,"02":50000,"03":50000,"04":50000,"05":50000,"06":50000,"07":40000},"tenant_room_No34":{"01":50000,"02":50000,"03":50000,"04":50000,"05":20000},"tenant_room_No35":{"01":50000,"02":50000,"03":50000,"04":50000,"05":40000},"tenant_room_No36":{"01":50000,"02":50000,"03":50000},"tenant_room_No37":{"01":50000,"02":50000,"03":50000,"04":50000,"05":50000,"06":50000},"tenant_room_No38":{"01":50000,"02":50000,"03":50000,"04":50000,"05":50000,"06":50000,"07":50000,"08":50000},"tenant_room_No39":{"01":50000,"02":50000,"03":50000,"04":50000,"05":25000,"06":50000,"07":50000,"08":50000,"09":50000,"10":50000},"tenant_room_No40":{"01":50000}};
+(function(){
+  let rooms = [];
+  let tenants = [];
+  let payments = [];
+  let properties = [];
+  let landlordInfo = {name:'', phone:''};
+  let activeTab = 'muhtasari';
+  let dashMonth = new Date().toISOString().slice(0,7);
+  let editingTenantId = null;
+  let editingPropertyId = null;
+  let searchNyumba = '';
+  let searchVyumba = '';
+  let searchWapangaji = '';
+  let searchMalipo = '';
+  let viewMode = 'tenant'; // 'tenant' (default, salama) au 'admin'
+  let adminPin = '';
+  let tenantLookupPhone = '';
+  let tenantLookupResult = null;
+  let tenantLookupError = '';
+  let selectedTenantId = null;
+  let dashPropertyFilter = '';
+
+  const root = document.getElementById('daftari-root');
+  const tabsEl = document.getElementById('db-tabs');
+  const bodyEl = document.getElementById('db-body');
+  const toastEl = document.getElementById('db-toast');
+
+  const MONTHS_SW = ['Januari','Februari','Machi','Aprili','Mei','Juni','Julai','Agosti','Septemba','Oktoba','Novemba','Desemba'];
+
+  function fmtMonth(ym){
+    if(!ym) return '';
+    const [y,m] = ym.split('-');
+    return MONTHS_SW[parseInt(m,10)-1] + ' ' + y;
+  }
+  function fmtDate(d){
+    if(!d) return '—';
+    const dt = new Date(d + 'T00:00:00');
+    return dt.getDate() + ' ' + MONTHS_SW[dt.getMonth()].slice(0,3) + ' ' + dt.getFullYear();
+  }
+  function money(n){
+    n = Number(n)||0;
+    return n.toLocaleString('en-US');
+  }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function bindEnterToClick(inputIds, buttonId){
+    inputIds.forEach(id=>{
+      const el = document.getElementById(id);
+      if(el){
+        el.addEventListener('keydown', e=>{
+          if(e.key==='Enter' && el.tagName!=='TEXTAREA'){
+            e.preventDefault();
+            const btn = document.getElementById(buttonId);
+            if(btn) btn.click();
+          }
+        });
+      }
+    });
+  }
+  function bindSearchInput(inputId, varSetter){
+    const el = document.getElementById(inputId);
+    if(!el) return;
+    el.addEventListener('input', (e)=>{
+      const cursor = e.target.selectionStart;
+      varSetter(e.target.value);
+      render();
+      const fresh = document.getElementById(inputId);
+      if(fresh){ fresh.focus(); fresh.setSelectionRange(cursor,cursor); }
+    });
+  }
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    setTimeout(()=>toastEl.classList.remove('show'), 2200);
+  }
+
+  const FS_COLLECTION = 'daftari_la_kodi';
+  async function getJSON(key){
+    try{
+      const doc = await db.collection(FS_COLLECTION).doc(key).get();
+      return doc.exists ? doc.data().value : null;
+    }catch(e){ console.error('Imeshindwa kusoma', key, e); return null; }
+  }
+  async function setJSON(key, val){
+    try{
+      await db.collection(FS_COLLECTION).doc(key).set({value: val});
+    }catch(e){ console.error('Hifadhi imeshindikana', e); toast('Hitilafu: imeshindwa kuhifadhi (angalia mtandao)'); }
+  }
+
+  async function loadAll(){
+    rooms = (await getJSON('rooms')) || [];
+    tenants = (await getJSON('tenants')) || [];
+    payments = (await getJSON('payments')) || [];
+    properties = (await getJSON('properties')) || [];
+    landlordInfo = (await getJSON('landlordInfo')) || {name:'', phone:''};
+    adminPin = (await getJSON('adminPin')) || '';
+  }
+  async function saveRooms(){ await setJSON('rooms', rooms); }
+  async function saveTenants(){ await setJSON('tenants', tenants); }
+  async function savePayments(){ await setJSON('payments', payments); }
+  async function saveProperties(){ await setJSON('properties', properties); }
+  async function saveLandlordInfo(){ await setJSON('landlordInfo', landlordInfo); }
+  async function saveAdminPin(){ await setJSON('adminPin', adminPin); }
+
+  function toIntlPhone(phone){
+    if(!phone) return '';
+    let p = String(phone).replace(/[^0-9]/g,'');
+    if(p.startsWith('0')) p = '255' + p.slice(1);
+    return p;
+  }
+
+  function printReceipt(paymentId){
+    const p = payments.find(x=>x.id===paymentId);
+    if(!p) return;
+    const t = tenants.find(x=>x.id===p.tenantId);
+    const receiptNo = p.id.slice(-6).toUpperCase();
+    const maelezoRow = p.notes ? ('<div class="r-row"><span>Maelezo</span><span>' + p.notes + '</span></div>') : '';
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Risiti</title>
+      <style>
+        body{font-family:'Work Sans',Arial,sans-serif;padding:30px;color:#1C2B26;max-width:420px;margin:0 auto;}
+        .r-head{text-align:center;border-bottom:2px solid #1C2B26;padding-bottom:12px;margin-bottom:16px;}
+        .r-head h1{font-size:18px;margin:0 0 4px;}
+        .r-head p{font-size:12px;color:#55645D;margin:0;}
+        .r-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13.5px;border-bottom:1px dashed #D8CFB5;}
+        .r-row span:first-child{color:#55645D;}
+        .r-amount{text-align:center;margin:18px 0;font-size:26px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+        .r-foot{text-align:center;font-size:11px;color:#55645D;margin-top:20px;}
+        @media print{ body{padding:10px;} }
+      </style></head><body>
+      <div class="r-head">
+        <h1>${landlordInfo.name ? landlordInfo.name : 'RISITI YA MALIPO YA KODI'}</h1>
+        <p>${landlordInfo.phone ? 'Simu: '+landlordInfo.phone : ''}</p>
+      </div>
+      <div class="r-row"><span>Namba ya risiti</span><span>${receiptNo}</span></div>
+      <div class="r-row"><span>Tarehe</span><span>${fmtDate(p.date)}</span></div>
+      <div class="r-row"><span>Jina la mpangaji</span><span>${t?t.name:'—'}</span></div>
+      <div class="r-row"><span>Nyumba</span><span>${propertyName(propertyOfRoom(p.roomId))}</span></div>
+      <div class="r-row"><span>Chumba</span><span>${roomName(p.roomId)}</span></div>
+      <div class="r-row"><span>Analipia mwezi</span><span>${fmtMonth(p.forMonth)}</span></div>
+      ${maelezoRow}
+      <div class="r-amount">Tsh ${money(p.amount)}</div>
+      <div class="r-foot">Risiti hii imetolewa kielektroniki. Asante kwa malipo yako.</div>
+      </body></html>`;
+    const win = window.open('', '_blank', 'width=480,height=700');
+    if(win){
+      win.document.write(html);
+      win.document.close();
+      setTimeout(()=>{ win.focus(); win.print(); }, 300);
+    }
+    else { toast('Ruhusu pop-up kwenye kivinjari ili kuchapisha risiti'); }
+  }
+
+  function buildReceiptText(p){
+    const t = tenants.find(x=>x.id===p.tenantId);
+    const receiptNo = p.id.slice(-6).toUpperCase();
+    const lines = [
+      `RISITI YA MALIPO${landlordInfo.name ? ' - '+landlordInfo.name : ''}`,
+      `Namba ya risiti: ${receiptNo}`,
+      `Tarehe: ${fmtDate(p.date)}`,
+      `Jina: ${t?t.name:'—'}`,
+      `Nyumba: ${propertyName(propertyOfRoom(p.roomId))}`,
+      `Chumba: ${roomName(p.roomId)}`,
+      `Analipia mwezi: ${fmtMonth(p.forMonth)}`,
+      p.notes ? `Maelezo: ${p.notes}` : null,
+      `KIASI: Tsh ${money(p.amount)}`,
+      ``,
+      `Asante kwa malipo yako.`,
+      landlordInfo.phone ? `Mawasiliano: ${landlordInfo.phone}` : null,
+    ].filter(Boolean);
+    return lines.join('\n');
+  }
+  function waLinkForReceipt(p){
+    const t = tenants.find(x=>x.id===p.tenantId);
+    if(!t || !t.phone) return '';
+    return `https://wa.me/${toIntlPhone(t.phone)}?text=${encodeURIComponent(buildReceiptText(p))}`;
+  }
+
+  function buildStatementForTenant(t){
+    const rent = Number(t.rentAmount||0);
+    const paid = paidTotalFor(t.id);
+    const d = debtBreakdown(t);
+    const history = payments.filter(p=>p.tenantId===t.id).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const lines = [
+      `ANKARA YA MADAI${landlordInfo.name ? ' - '+landlordInfo.name : ''}`,
+      `Tarehe: ${fmtDate(new Date().toISOString().slice(0,10))}`,
+      ``,
+      `Jina: ${t.name}`,
+      `Nyumba: ${propertyName(propertyOfRoom(t.roomId))}`,
+      `Chumba: ${roomName(t.roomId)}`,
+      t.phone ? `Simu: ${t.phone}` : null,
+      rent ? `Kodi ya mwezi: Tsh ${money(rent)}` : null,
+      `Jumla amelipa (tangu aingie): Tsh ${money(paid)}`,
+      d ? `Deni la mwezi huu (${fmtMonth(d.thisYM)}): Tsh ${d.thisMonthDue>0?money(d.thisMonthDue):'0'}` : null,
+      d && d.arrears>0 ? `Deni la nyuma (miezi iliyopita): Tsh ${money(d.arrears)}` : null,
+      d ? `JUMLA ANADAIWA: Tsh ${d.total>0?money(d.total):'0 (hana deni)'}` : null,
+      ``,
+      `Historia ya malipo ya hivi karibuni:`,
+      ...history.slice(0,6).map(p=>`- ${fmtDate(p.date)}: Tsh ${money(p.amount)} (mwezi wa ${fmtMonth(p.forMonth)})`),
+      ``,
+      landlordInfo.phone ? `Kwa maswali wasiliana: ${landlordInfo.phone}` : null,
+    ].filter(Boolean);
+    return lines.join('\n');
+  }
+
+  function roomName(id){
+    const r = rooms.find(x=>x.id===id);
+    return r ? r.name : '—';
+  }
+  function propertyName(id){
+    const p = properties.find(x=>x.id===id);
+    return p ? p.name : 'Bila nyumba';
+  }
+  function propertyOfRoom(roomId){
+    const r = rooms.find(x=>x.id===roomId);
+    return r ? r.propertyId : '';
+  }
+  function tenantName(id){
+    const t = tenants.find(x=>x.id===id);
+    return t ? t.name : '—';
+  }
+  function activeTenants(){
+    return tenants.filter(t=>t.status==='active');
+  }
+  function paidForMonth(tenantId, ym){
+    return payments.filter(p=>p.tenantId===tenantId && p.forMonth===ym)
+      .reduce((s,p)=>s+Number(p.amount||0),0);
+  }
+  function paidTotalFor(tenantId){
+    return payments.filter(p=>p.tenantId===tenantId)
+      .reduce((s,p)=>s+Number(p.amount||0),0);
+  }
+  function monthsElapsed(t){
+    if(!t.moveInDate) return 0;
+    const start = new Date(t.moveInDate + 'T00:00:00');
+    const endStr = (t.status==='left' && t.moveOutDate) ? t.moveOutDate : new Date().toISOString().slice(0,10);
+    const end = new Date(endStr + 'T00:00:00');
+    let months = (end.getFullYear()-start.getFullYear())*12 + (end.getMonth()-start.getMonth()) + 1;
+    return Math.max(months, 0);
+  }
+  // Inarudisha null kama kodi ya mwezi haijawekwa (hatuwezi kuhesabu deni)
+  function totalOwed(t){
+    const rent = Number(t.rentAmount||0);
+    if(!rent) return null;
+    const months = monthsElapsed(t);
+    const expected = months * rent;
+    const paid = paidTotalFor(t.id);
+    return expected - paid;
+  }
+
+  function currentYM(t){
+    const endStr = (t.status==='left' && t.moveOutDate) ? t.moveOutDate : new Date().toISOString().slice(0,10);
+    return endStr.slice(0,7);
+  }
+
+  // Inagawanya deni: deni la mwezi huu peke yake, na deni la nyuma (miezi iliyopita)
+  // Inarudisha null kama kodi haijawekwa
+  function debtBreakdown(t){
+    const rent = Number(t.rentAmount||0);
+    if(!rent || !t.moveInDate) return null;
+    const start = new Date(t.moveInDate + 'T00:00:00');
+    const thisYM = currentYM(t);
+    let y = start.getFullYear(), m = start.getMonth();
+    const [endY, endM0] = thisYM.split('-').map(Number);
+    const endM = endM0 - 1; // 0-indexed
+    let arrears = 0;
+    while(y < endY || (y===endY && m < endM)){
+      const ym = `${y}-${String(m+1).padStart(2,'0')}`;
+      const paid = paidForMonth(t.id, ym);
+      arrears += (rent - paid);
+      m++; if(m>11){ m=0; y++; }
+    }
+    const thisMonthPaid = paidForMonth(t.id, thisYM);
+    const thisMonthDue = rent - thisMonthPaid;
+    return { arrears, thisMonthDue, thisYM, total: arrears + thisMonthDue };
+  }
+
+  function oweBadgeHtml(t){
+    const d = debtBreakdown(t);
+    if(d===null) return '—';
+    if(d.thisMonthDue<=0 && d.arrears<=0){
+      return `<span class="db-badge badge-paid">Hana deni</span>`;
+    }
+    let html = d.thisMonthDue>0
+      ? `<span class="db-badge badge-unpaid">${money(d.thisMonthDue)}</span>`
+      : `<span class="db-badge badge-paid">Mwezi huu sawa</span>`;
+    if(d.arrears>0){
+      html += `<div style="font-size:11px;color:var(--unpaid);margin-top:3px;">+ deni la nyuma: ${money(d.arrears)}</div>`;
+    }
+    return html;
+  }
+
+  async function importFromExcel(){
+    let addedProps = 0, addedRooms = 0, addedTenants = 0, addedPayments = 0;
+    IMPORT_DATA.properties.forEach(p=>{
+      if(!properties.some(x=>x.id===p.id)){ properties.push(p); addedProps++; }
+    });
+    IMPORT_DATA.rooms.forEach(r=>{
+      if(!rooms.some(x=>x.id===r.id)){ rooms.push(r); addedRooms++; }
+    });
+    IMPORT_DATA.tenants.forEach(t=>{
+      if(!tenants.some(x=>x.id===t.id)){ tenants.push(t); addedTenants++; }
+    });
+    IMPORT_DATA.payments.forEach(p=>{
+      if(!payments.some(x=>x.id===p.id)){ payments.push(p); addedPayments++; }
+    });
+    await saveProperties();
+    await saveRooms();
+    await saveTenants();
+    await savePayments();
+    toast(`Data imeingizwa: nyumba ${addedProps}, vyumba ${addedRooms}, wapangaji ${addedTenants}, malipo ${addedPayments}`);
+  }
+
+  async function reconcileWithNewExcel(){
+    let changed = 0;
+    // Rekebisha majina ya vyumba vya Nyumba Mpya kutoka No.33-40 kwenda No.1-8
+    const mpyaRenames = {"room_No33":"No. 1","room_No34":"No. 2","room_No35":"No. 3","room_No36":"No. 4","room_No37":"No. 5","room_No38":"No. 6","room_No39":"No. 7","room_No40":"No. 8"};
+    Object.keys(mpyaRenames).forEach(rid=>{
+      const r = rooms.find(x=>x.id===rid);
+      if(r && r.name !== mpyaRenames[rid]){ r.name = mpyaRenames[rid]; changed++; }
+    });
+
+    Object.keys(CORRECTED_PAYMENTS_2026).forEach(tenantId=>{
+      const t = tenants.find(x=>x.id===tenantId);
+      if(!t) return;
+      const monthMap = CORRECTED_PAYMENTS_2026[tenantId];
+      for(let mm=1; mm<=12; mm++){
+        const mmStr = String(mm).padStart(2,'0');
+        const forMonth = `2026-${mmStr}`;
+        const newAmt = monthMap[mmStr];
+        const payId = `pay_${tenantId}_${mmStr}`;
+        const existingIdx = payments.findIndex(p=>p.id===payId);
+        if(newAmt){
+          if(existingIdx>=0){
+            if(Number(payments[existingIdx].amount)!==newAmt){
+              payments[existingIdx].amount = String(newAmt);
+              changed++;
+            }
+          } else {
+            payments.push({id:payId, tenantId, roomId:t.roomId, date:`2026-${mmStr}-01`, forMonth, amount:String(newAmt), notes:''});
+            changed++;
+          }
+        } else if(existingIdx>=0){
+          payments.splice(existingIdx,1);
+          changed++;
+        }
+      }
+    });
+    await saveRooms();
+    await savePayments();
+    toast(changed ? `Malipo yamesahihishwa: mabadiliko ${changed}` : 'Hakuna tofauti iliyopatikana');
+  }
+
+  const TABS = [
+    {id:'muhtasari', label:'Muhtasari'},
+    {id:'nyumba', label:'Nyumba'},
+    {id:'vyumba', label:'Vyumba'},
+    {id:'wapangaji', label:'Wapangaji'},
+    {id:'malipo', label:'Malipo'},
+  ];
+
+  function renderTabs(){
+    tabsEl.innerHTML = TABS.map(t=>
+      `<button class="db-tab ${activeTab===t.id?'active':''}" data-tab="${t.id}">${t.label}</button>`
+    ).join('') + `<button class="db-tab" id="exit-admin-btn" style="max-width:110px;color:var(--ink-soft);">Toka (Mpangaji)</button>`;
+    tabsEl.querySelectorAll('.db-tab[data-tab]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ activeTab = btn.dataset.tab; render(); });
+    });
+    const exitBtn = document.getElementById('exit-admin-btn');
+    if(exitBtn) exitBtn.addEventListener('click', ()=>{ viewMode='tenant'; render(); });
+  }
+
+  function render(){
+    if(viewMode==='tenant'){ renderTenantLookupScreen(); return; }
+    renderTabs();
+    if(activeTab==='muhtasari') renderMuhtasari();
+    else if(activeTab==='nyumba') renderNyumba();
+    else if(activeTab==='wapangaji') renderWapangaji();
+    else if(activeTab==='vyumba') renderVyumba();
+    else if(activeTab==='malipo') renderMalipo();
+    else if(activeTab==='tenantDetail') renderTenantDetail();
+  }
+
+  // ---------- MPANGAJI: TAZAMA TAARIFA ZAKO (SOMA TU) ----------
+  function renderTenantLookupScreen(){
+    tabsEl.innerHTML = `<div style="padding:10px 16px;text-align:right;width:100%;"><a href="#" id="admin-link" style="font-size:12px;color:var(--ink-soft);text-decoration:underline;cursor:pointer;">Mimi ni Mwenye Nyumba &rarr;</a></div>`;
+
+    let resultHtml = '';
+    if(tenantLookupResult){
+      const t = tenantLookupResult;
+      const d = debtBreakdown(t);
+      const rent = Number(t.rentAmount||0);
+      const history = payments.filter(p=>p.tenantId===t.id).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+      const lastPayment = history[0];
+      const histRowsHtml = history.slice(0,12).map(p=>'<tr><td class="db-mono">'+fmtDate(p.date)+'</td><td>'+fmtMonth(p.forMonth)+'</td><td class="db-mono">'+money(p.amount)+'</td></tr>').join('');
+      const histTableHtml = history.length
+        ? ('<table class="db-table"><thead><tr><th>Tarehe</th><th>Mwezi aliolipia</th><th>Kiasi</th></tr></thead><tbody>'+histRowsHtml+'</tbody></table>')
+        : '<div class="db-empty">Bado hakuna malipo yaliyorekodiwa.</div>';
+      resultHtml = `
+        <div class="db-cards">
+          <div class="db-card"><div class="db-card-num">${propertyName(propertyOfRoom(t.roomId))}</div><div class="db-card-label">Nyumba</div></div>
+          <div class="db-card"><div class="db-card-num">${roomName(t.roomId)}</div><div class="db-card-label">Chumba</div></div>
+          <div class="db-card"><div class="db-card-num">${rent?money(rent):'—'}</div><div class="db-card-label">Kodi ya mwezi</div></div>
+          <div class="db-card"><div class="db-card-num">${lastPayment?fmtDate(lastPayment.date):'Bado hujalipa'}</div><div class="db-card-label">Malipo ya mwisho</div></div>
+          <div class="db-card"><div class="db-card-num" style="color:${d&&d.thisMonthDue>0?'var(--unpaid)':'var(--paid)'}">${d?(d.thisMonthDue>0?money(d.thisMonthDue):'0'):'—'}</div><div class="db-card-label">Deni la mwezi huu</div></div>
+          <div class="db-card"><div class="db-card-num" style="color:${d&&d.arrears>0?'var(--unpaid)':'var(--paid)'}">${d?(d.arrears>0?money(d.arrears):'0'):'—'}</div><div class="db-card-label">Deni la nyuma</div></div>
+        </div>
+        <div class="db-table-wrap">
+          ${histTableHtml}
+        </div>
+      `;
+    } else if(tenantLookupError){
+      resultHtml = `<div class="db-empty">${tenantLookupError}</div>`;
+    }
+
+    bodyEl.innerHTML = `
+      <div class="db-form" style="max-width:420px;margin:20px auto 18px;">
+        <div class="db-section-title">Angalia Taarifa Zako za Kodi</div>
+        <p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;">Weka namba yako ya simu uliyosajiliwa nayo na mwenye nyumba, kisha bofya Tafuta kuona hali ya malipo yako.</p>
+        <div class="db-form-grid">
+          <div class="db-field"><label>Namba ya simu</label><input id="lookup-phone" placeholder="07XXXXXXXX" value="${tenantLookupPhone}"></div>
+        </div>
+        <button class="db-btn" id="lookup-btn">Tafuta</button>
+      </div>
+      <div style="max-width:640px;margin:0 auto;">${resultHtml}</div>
+    `;
+
+    document.getElementById('lookup-btn').addEventListener('click', ()=>{
+      const phone = document.getElementById('lookup-phone').value.trim();
+      tenantLookupPhone = phone;
+      const norm = toIntlPhone(phone);
+      const found = norm ? tenants.find(t=> t.phone && toIntlPhone(t.phone)===norm) : null;
+      if(found){ tenantLookupResult = found; tenantLookupError=''; }
+      else { tenantLookupResult=null; tenantLookupError = 'Hatujapata mpangaji mwenye namba hiyo. Hakikisha umeandika sahihi, au wasiliana na mwenye nyumba.'; }
+      renderTenantLookupScreen();
+    });
+    bindEnterToClick(['lookup-phone'], 'lookup-btn');
+
+    document.getElementById('admin-link').addEventListener('click', async (e)=>{
+      e.preventDefault();
+      if(adminPin){
+        const entered = prompt('Weka PIN ya Mwenye Nyumba:');
+        if(entered===null) return;
+        if(entered !== adminPin){ toast('PIN si sahihi'); return; }
+      } else {
+        const setPin = confirm('Bado hujaweka PIN ya kulinda sehemu ya Mwenye Nyumba. Ungependa kuweka PIN sasa? (Ghairi kuendelea bila PIN)');
+        if(setPin){
+          const newPin = prompt('Weka PIN mpya (namba au maneno mafupi):');
+          if(newPin){ adminPin = newPin; await saveAdminPin(); toast('PIN imewekwa'); }
+        }
+      }
+      viewMode = 'admin';
+      render();
+    });
+  }
+
+  // ---------- NYUMBA ----------
+  function renderNyumba(){
+    const editing = editingPropertyId ? properties.find(p=>p.id===editingPropertyId) : null;
+    const filteredProps = searchNyumba
+      ? properties.filter(p=>p.name.toLowerCase().includes(searchNyumba.toLowerCase()))
+      : properties;
+    const rows = filteredProps.map(p=>{
+      const roomCount = rooms.filter(r=>r.propertyId===p.id).length;
+      const tenantCount = tenants.filter(t=>t.status==='active' && propertyOfRoom(t.roomId)===p.id).length;
+      return `<tr>
+        <td>${p.name}</td>
+        <td class="db-mono">${roomCount}</td>
+        <td class="db-mono">${tenantCount}</td>
+        <td>
+          <div class="db-actions-row">
+            <button class="db-btn secondary small" data-edit-property="${p.id}">Hariri</button>
+            <button class="db-btn danger small" data-del-property="${p.id}">Futa</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    const alreadyImported = tenants.some(t=>IMPORT_DATA.tenants.some(it=>it.id===t.id));
+    const reconcileBtnHtml = alreadyImported ? '<button class="db-btn secondary" id="reconcile-excel" style="margin-left:8px;">Sahihisha malipo kwa Excel mpya</button>' : '';
+    const cancelEditPropHtml = editing ? '<button class="db-btn secondary" id="cancel-edit-property">Ghairi</button>' : '';
+    const nyumbaTableHtml = filteredProps.length
+      ? ('<table class="db-table"><thead><tr><th>Nyumba</th><th>Idadi ya vyumba</th><th>Wapangaji wanaoishi</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>')
+      : ('<div class="db-empty">'+(searchNyumba ? 'Hakuna nyumba iliyopatikana.' : 'Bado hujaongeza nyumba yoyote. Ongeza nyumba kwanza kabla ya kuongeza vyumba vyake.')+'</div>');
+
+    bodyEl.innerHTML = `
+      <div class="db-form">
+        <div class="db-section-title">Taarifa za mwenye nyumba (kwa risiti na ankara)</div>
+        <div class="db-form-grid">
+          <div class="db-field"><label>Jina lako / la nyumba</label><input id="landlord-name" value="${landlordInfo.name||''}" placeholder="mfano: Mzee Juma - Nyumba za Kupanga"></div>
+          <div class="db-field"><label>Namba ya simu</label><input id="landlord-phone" value="${landlordInfo.phone||''}" placeholder="07XXXXXXXX"></div>
+        </div>
+        <button class="db-btn secondary small" id="save-landlord">Hifadhi taarifa</button>
+      </div>
+      <div class="db-form" style="border-color:var(--gold);">
+        <div class="db-section-title">Ingiza data ya awali kutoka Excel</div>
+        <p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;">
+          Hii itaingiza mara moja: nyumba 2 (Nyumba Dar - vyumba 32, Nyumba Mpya - vyumba 8), wapangaji wote 40 wanaoishi sasa (majina, simu, kodi), na malipo yaliyorekodiwa kwa mwaka 2026 kutoka faili lako la Excel. Tarehe ya kuingia imewekwa 1 Januari 2026 kwa wote, hivyo deni linahesabika kuanzia mwaka huu — deni la miaka ya nyuma (2025 na kabla) halijaingizwa moja kwa moja.
+        </p>
+        <button class="db-btn" id="import-excel" ${alreadyImported?'disabled style="opacity:0.5;cursor:not-allowed;"':''}>${alreadyImported ? 'Tayari imeingizwa ✓' : 'Ingiza data ya Excel sasa'}</button>
+        ${reconcileBtnHtml}
+      </div>
+      <div class="db-form">
+        <div class="db-section-title">${editing ? 'Hariri nyumba' : 'Ongeza nyumba'}</div>
+        <div class="db-form-grid">
+          <div class="db-field"><label>Jina la nyumba</label><input id="property-name" value="${editing?editing.name:''}" placeholder="mfano: Nyumba Dar, Nyumba Mpya"></div>
+        </div>
+        <div class="db-actions-row">
+          <button class="db-btn" id="add-property">${editing ? 'Hifadhi mabadiliko' : 'Hifadhi nyumba'}</button>
+          ${cancelEditPropHtml}
+        </div>
+      </div>
+      <div class="db-section-title"><span>Orodha ya nyumba</span><input type="text" class="db-search" id="search-nyumba" placeholder="Tafuta nyumba..." value="${searchNyumba}"></div>
+      <div class="db-table-wrap">
+        ${nyumbaTableHtml}
+      </div>
+    `;
+
+    bindSearchInput('search-nyumba', v=>{ searchNyumba=v; });
+    bindEnterToClick(['property-name'], 'add-property');
+    bindEnterToClick(['landlord-name','landlord-phone'], 'save-landlord');
+    document.getElementById('save-landlord').addEventListener('click', async ()=>{
+      landlordInfo = {
+        name: document.getElementById('landlord-name').value.trim(),
+        phone: document.getElementById('landlord-phone').value.trim()
+      };
+      await saveLandlordInfo();
+      toast('Taarifa za mwenye nyumba zimehifadhiwa');
+    });
+    const importBtn = document.getElementById('import-excel');
+    if(importBtn && !alreadyImported){
+      importBtn.addEventListener('click', async ()=>{
+        importBtn.disabled = true;
+        importBtn.textContent = 'Inaingiza...';
+        await importFromExcel();
+        renderNyumba();
+      });
+    }
+    const reconcileBtn = document.getElementById('reconcile-excel');
+    if(reconcileBtn){
+      reconcileBtn.addEventListener('click', async ()=>{
+        reconcileBtn.disabled = true;
+        reconcileBtn.textContent = 'Inasahihisha...';
+        await reconcileWithNewExcel();
+        renderNyumba();
+      });
+    }
+
+    document.getElementById('add-property').addEventListener('click', async ()=>{
+      const name = document.getElementById('property-name').value.trim();
+      if(!name){ toast('Andika jina la nyumba'); return; }
+      if(editing){
+        editing.name = name;
+        toast('Nyumba imesahihishwa');
+      } else {
+        properties.push({id: uid(), name});
+        toast('Nyumba imeongezwa');
+      }
+      await saveProperties();
+      editingPropertyId = null;
+      renderNyumba();
+    });
+    const cancelEditPropBtn = document.getElementById('cancel-edit-property');
+    if(cancelEditPropBtn) cancelEditPropBtn.addEventListener('click', ()=>{ editingPropertyId=null; renderNyumba(); });
+    bodyEl.querySelectorAll('[data-edit-property]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ editingPropertyId = btn.dataset.editProperty; renderNyumba(); window.scrollTo(0,0); });
+    });
+    bodyEl.querySelectorAll('[data-del-property]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.dataset.delProperty;
+        if(rooms.some(r=>r.propertyId===id)){
+          toast('Nyumba hii ina vyumba, futa vyumba vyake kwanza');
+          return;
+        }
+        properties = properties.filter(p=>p.id!==id);
+        await saveProperties();
+        renderNyumba();
+      });
+    });
+  }
+
+  // ---------- MUHTASARI ----------
+  function renderMuhtasari(){
+    const filtered = dashPropertyFilter
+      ? activeTenants().filter(t=>propertyOfRoom(t.roomId)===dashPropertyFilter)
+      : activeTenants();
+    let totalPaidThisMonth = 0;
+    let totalOwedAll = 0;
+    let waliolipa = 0, hawajalipa = 0, sehemu = 0, wenyeDeni = 0;
+
+    const rows = filtered.map(t=>{
+      const paid = paidForMonth(t.id, dashMonth);
+      const expected = Number(t.rentAmount||0);
+      const d = debtBreakdown(t);
+      totalPaidThisMonth += paid;
+      if(d && d.total>0){ totalOwedAll += d.total; wenyeDeni++; }
+      let statusHtml;
+      if(expected > 0 && paid >= expected){ statusHtml = `<span class="db-badge badge-paid">Amelipa kamili</span>`; waliolipa++; }
+      else if(paid > 0){ statusHtml = `<span class="db-badge badge-partial">Amelipa kiasi</span>`; sehemu++; }
+      else { statusHtml = `<span class="db-badge badge-unpaid">Hajalipa</span>`; hawajalipa++; }
+      const oweHtml = oweBadgeHtml(t);
+      const kumbushaHtml = (d && d.total>0 && t.phone)
+        ? ('<a class="db-btn small" style="background:#2F6B4F;text-decoration:none;display:inline-block;" href="https://wa.me/'+toIntlPhone(t.phone)+'?text='+encodeURIComponent(buildStatementForTenant(t))+'" target="_blank">Kumbusha (WhatsApp)</a>')
+        : '';
+      return `<tr>
+        <td><a href="#" data-view-tenant="${t.id}" style="color:var(--ink);font-weight:600;text-decoration:underline;text-decoration-color:var(--border);cursor:pointer;">${t.name}</a></td>
+        <td>${propertyName(propertyOfRoom(t.roomId))}</td>
+        <td>${roomName(t.roomId)}</td>
+        <td class="db-mono">${t.phone||'—'}</td>
+        <td class="db-mono">${expected?money(expected):'—'}</td>
+        <td class="db-mono">${money(paid)}</td>
+        <td>${statusHtml}</td>
+        <td>${oweHtml}</td>
+        <td>
+          <div class="db-actions-row">
+            <button class="db-btn small" data-record="${t.id}">Rekodi malipo</button>
+            ${kumbushaHtml}
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    const propFilterOptions = properties.map(p=>`<option value="${p.id}" ${dashPropertyFilter===p.id?'selected':''}>${p.name}</option>`).join('');
+    const propSelectHtml = properties.length
+      ? ('<select class="db-month-picker" id="dash-property"><option value="">Nyumba zote</option>'+propFilterOptions+'</select>')
+      : '';
+    const muhtasariTableHtml = filtered.length
+      ? ('<table class="db-table"><thead><tr><th>Mpangaji</th><th>Nyumba</th><th>Chumba</th><th>Simu</th><th>Kodi</th><th>Amelipa mwezi huu</th><th>Hali</th><th>Deni</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>')
+      : '<div class="db-empty">Hakuna mpangaji anayeishi kwa sasa. Nenda kwenye tab ya "Wapangaji" kuongeza.</div>';
+
+    bodyEl.innerHTML = `
+      <div class="db-section-title">
+        <span>Muhtasari wa mwezi</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${propSelectHtml}
+          <input type="month" class="db-month-picker" id="dash-month" value="${dashMonth}">
+        </div>
+      </div>
+      <div class="db-cards">
+        <div class="db-card"><div class="db-card-num">${filtered.length}</div><div class="db-card-label">Wapangaji wanaoishi</div></div>
+        <div class="db-card"><div class="db-card-num" style="color:var(--paid)">${waliolipa}</div><div class="db-card-label">Wamelipa kamili</div></div>
+        <div class="db-card"><div class="db-card-num" style="color:var(--partial)">${sehemu}</div><div class="db-card-label">Wamelipa kiasi</div></div>
+        <div class="db-card"><div class="db-card-num" style="color:var(--unpaid)">${hawajalipa}</div><div class="db-card-label">Hawajalipa mwezi huu</div></div>
+        <div class="db-card"><div class="db-card-num">${money(totalPaidThisMonth)}</div><div class="db-card-label">Imepokelewa (${fmtMonth(dashMonth)})</div></div>
+        <div class="db-card"><div class="db-card-num" style="color:var(--unpaid)">${money(totalOwedAll)}</div><div class="db-card-label">Deni la jumla (${wenyeDeni} wenye deni)</div></div>
+      </div>
+      <div class="db-table-wrap">
+        ${muhtasariTableHtml}
+      </div>
+    `;
+
+    document.getElementById('dash-month').addEventListener('change', e=>{
+      dashMonth = e.target.value;
+      renderMuhtasari();
+    });
+    const propSel = document.getElementById('dash-property');
+    if(propSel){
+      propSel.addEventListener('change', e=>{
+        dashPropertyFilter = e.target.value;
+        renderMuhtasari();
+      });
+    }
+    bodyEl.querySelectorAll('[data-record]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        activeTab='malipo';
+        render();
+        setTimeout(()=>{
+          const sel = document.getElementById('pay-tenant');
+          if(sel){ sel.value = btn.dataset.record; }
+          const monthInput = document.getElementById('pay-month');
+          if(monthInput){ monthInput.value = dashMonth; }
+        }, 0);
+      });
+    });
+    bodyEl.querySelectorAll('[data-view-tenant]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        selectedTenantId = a.dataset.viewTenant;
+        activeTab = 'tenantDetail';
+        render();
+        window.scrollTo(0,0);
+      });
+    });
+  }
+
+  // ---------- VYUMBA ----------
+  function renderVyumba(){
+    if(!properties.length){
+      bodyEl.innerHTML = `<div class="db-empty">Kwanza ongeza nyumba kwenye tab ya "Nyumba" kabla ya kuongeza vyumba.</div>`;
+      return;
+    }
+    const propOptions = properties.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+
+    const sortedRooms = rooms.slice().sort((a,b)=>{
+      const pa = propertyName(a.propertyId), pb = propertyName(b.propertyId);
+      return pa.localeCompare(pb) || a.name.localeCompare(b.name);
+    });
+    const filteredRooms = searchVyumba
+      ? sortedRooms.filter(r=>{
+          const q = searchVyumba.toLowerCase();
+          return r.name.toLowerCase().includes(q) || propertyName(r.propertyId).toLowerCase().includes(q);
+        })
+      : sortedRooms;
+    const rows = filteredRooms.map(r=>{
+      const occ = tenants.find(t=>t.roomId===r.id && t.status==='active');
+      return `<tr>
+        <td>${propertyName(r.propertyId)}</td>
+        <td>${r.name}</td>
+        <td>${occ ? occ.name : '<span class="db-badge badge-left">Wazi</span>'}</td>
+        <td><button class="db-btn danger small" data-del-room="${r.id}">Futa</button></td>
+      </tr>`;
+    }).join('');
+
+    const vyumbaTableHtml = filteredRooms.length
+      ? ('<table class="db-table"><thead><tr><th>Nyumba</th><th>Chumba</th><th>Anayeishi sasa</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>')
+      : ('<div class="db-empty">'+(searchVyumba ? 'Hakuna chumba kilichopatikana.' : 'Bado hujaongeza vyumba.')+'</div>');
+
+    bodyEl.innerHTML = `
+      <div class="db-form">
+        <div class="db-section-title">Ongeza chumba</div>
+        <div class="db-form-grid">
+          <div class="db-field"><label>Nyumba</label><select id="room-property"><option value="">-- Chagua --</option>${propOptions}</select></div>
+          <div class="db-field"><label>Jina/namba ya chumba</label><input id="room-name" placeholder="mfano: No. 3"></div>
+        </div>
+        <button class="db-btn" id="add-room">Hifadhi chumba</button>
+      </div>
+      <div class="db-section-title"><span>Orodha ya vyumba</span><input type="text" class="db-search" id="search-vyumba" placeholder="Tafuta chumba au nyumba..." value="${searchVyumba}"></div>
+      <div class="db-table-wrap">
+        ${vyumbaTableHtml}
+      </div>
+    `;
+
+    bindSearchInput('search-vyumba', v=>{ searchVyumba=v; });
+    bindEnterToClick(['room-name'], 'add-room');
+    document.getElementById('add-room').addEventListener('click', async ()=>{
+      const propertyId = document.getElementById('room-property').value;
+      const name = document.getElementById('room-name').value.trim();
+      if(!propertyId){ toast('Chagua nyumba'); return; }
+      if(!name){ toast('Andika jina la chumba'); return; }
+      rooms.push({id: uid(), name, propertyId});
+      await saveRooms();
+      toast('Chumba kimeongezwa');
+      renderVyumba();
+    });
+    bodyEl.querySelectorAll('[data-del-room]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.dataset.delRoom;
+        if(tenants.some(t=>t.roomId===id && t.status==='active')){
+          toast('Chumba kina mpangaji, huwezi kukifuta');
+          return;
+        }
+        rooms = rooms.filter(r=>r.id!==id);
+        await saveRooms();
+        renderVyumba();
+      });
+    });
+  }
+
+  // ---------- WAPANGAJI ----------
+  function renderWapangaji(){
+    const editing = editingTenantId ? tenants.find(t=>t.id===editingTenantId) : null;
+
+    const roomOptionsHtml = properties.length
+      ? properties.map(p=>{
+          const opts = rooms.filter(r=>r.propertyId===p.id).map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+          return opts ? `<optgroup label="${p.name}">${opts}</optgroup>` : '';
+        }).join('')
+      : rooms.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+
+    const sortedTenants = tenants.slice().sort((a,b)=> (b.moveInDate||'').localeCompare(a.moveInDate||''));
+    const filteredTenants = searchWapangaji
+      ? sortedTenants.filter(t=>{
+          const q = searchWapangaji.toLowerCase();
+          return t.name.toLowerCase().includes(q)
+            || (t.phone||'').toLowerCase().includes(q)
+            || roomName(t.roomId).toLowerCase().includes(q)
+            || propertyName(propertyOfRoom(t.roomId)).toLowerCase().includes(q);
+        })
+      : sortedTenants;
+    const rows = filteredTenants.map(t=>{
+      const statusBadge = t.status==='active'
+        ? `<span class="db-badge badge-paid">Anaishi</span>`
+        : `<span class="db-badge badge-left">Ametoka</span>`;
+      const owed = totalOwed(t);
+      const oweHtml = oweBadgeHtml(t);
+      const checkoutBtnHtml = t.status==='active' ? ('<button class="db-btn small" data-checkout="'+t.id+'">Ametoka</button>') : '';
+      return `<tr>
+        <td><a href="#" data-view-tenant="${t.id}" style="color:var(--ink);font-weight:600;text-decoration:underline;text-decoration-color:var(--border);cursor:pointer;">${t.name}</a></td>
+        <td class="db-mono">${t.phone||'—'}</td>
+        <td>${propertyName(propertyOfRoom(t.roomId))}</td>
+        <td>${roomName(t.roomId)}</td>
+        <td class="db-mono">${fmtDate(t.moveInDate)}</td>
+        <td class="db-mono">${t.status==='active' ? '—' : fmtDate(t.moveOutDate)}</td>
+        <td>${statusBadge}</td>
+        <td>${oweHtml}</td>
+        <td>
+          <div class="db-actions-row">
+            <button class="db-btn secondary small" data-edit-tenant="${t.id}">Hariri</button>
+            ${checkoutBtnHtml}
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    const cancelEditTenantHtml = editing ? '<button class="db-btn secondary" id="cancel-edit">Ghairi</button>' : '';
+    const wapangajiTableHtml = filteredTenants.length
+      ? ('<table class="db-table"><thead><tr><th>Jina</th><th>Simu</th><th>Nyumba</th><th>Chumba</th><th>Aliingia</th><th>Alitoka</th><th>Hali</th><th>Deni</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>')
+      : ('<div class="db-empty">'+(searchWapangaji ? 'Hakuna mpangaji aliyepatikana.' : 'Bado hujaongeza mpangaji yeyote.')+'</div>');
+
+    bodyEl.innerHTML = `
+      <div class="db-form">
+        <div class="db-section-title">${editing ? 'Hariri mpangaji' : 'Ongeza mpangaji mpya'}</div>
+        <div class="db-form-grid">
+          <div class="db-field"><label>Jina</label><input id="t-name" value="${editing?editing.name:''}" placeholder="Jina kamili"></div>
+          <div class="db-field"><label>Namba ya simu</label><input id="t-phone" value="${editing?(editing.phone||''):''}" placeholder="07XXXXXXXX"></div>
+          <div class="db-field"><label>Chumba</label><select id="t-room"><option value="">-- Chagua --</option>${roomOptionsHtml}</select></div>
+          <div class="db-field"><label>Kodi ya mwezi (si lazima)</label><input id="t-rent" type="number" value="${editing?(editing.rentAmount||''):''}" placeholder="mfano: 150000"></div>
+          <div class="db-field"><label>Tarehe ya kuingia</label><input id="t-movein" type="date" value="${editing?(editing.moveInDate||''):''}"></div>
+          <div class="db-field"><label>Maelezo ya ziada</label><input id="t-notes" value="${editing?(editing.notes||''):''}" placeholder="mfano: kazi, mawasiliano ya jamaa"></div>
+        </div>
+        <div class="db-actions-row">
+          <button class="db-btn" id="save-tenant">${editing ? 'Hifadhi mabadiliko' : 'Ongeza mpangaji'}</button>
+          ${cancelEditTenantHtml}
+        </div>
+      </div>
+      <div class="db-section-title"><span>Orodha ya wapangaji</span><input type="text" class="db-search" id="search-wapangaji" placeholder="Tafuta jina, simu, chumba..." value="${searchWapangaji}"></div>
+      <div class="db-table-wrap">
+        ${wapangajiTableHtml}
+      </div>
+    `;
+
+    if(editing){ document.getElementById('t-room').value = editing.roomId || ''; }
+    bindSearchInput('search-wapangaji', v=>{ searchWapangaji=v; });
+    bindEnterToClick(['t-name','t-phone','t-rent','t-movein','t-notes'], 'save-tenant');
+
+    document.getElementById('save-tenant').addEventListener('click', async ()=>{
+      const name = document.getElementById('t-name').value.trim();
+      const phone = document.getElementById('t-phone').value.trim();
+      const roomId = document.getElementById('t-room').value;
+      const rentAmount = document.getElementById('t-rent').value;
+      const moveInDate = document.getElementById('t-movein').value;
+      const notes = document.getElementById('t-notes').value.trim();
+      if(!name){ toast('Andika jina la mpangaji'); return; }
+      if(!roomId){ toast('Chagua chumba'); return; }
+
+      if(editing){
+        Object.assign(editing, {name, phone, roomId, rentAmount, moveInDate, notes});
+      } else {
+        tenants.push({
+          id: uid(), name, phone, roomId, rentAmount, moveInDate,
+          notes, status:'active', moveOutDate:''
+        });
+      }
+      await saveTenants();
+      editingTenantId = null;
+      toast('Taarifa za mpangaji zimehifadhiwa');
+      renderWapangaji();
+    });
+
+    const cancelBtn = document.getElementById('cancel-edit');
+    if(cancelBtn) cancelBtn.addEventListener('click', ()=>{ editingTenantId=null; renderWapangaji(); });
+
+    bodyEl.querySelectorAll('[data-edit-tenant]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ editingTenantId = btn.dataset.editTenant; renderWapangaji(); window.scrollTo(0,0); });
+    });
+    bodyEl.querySelectorAll('[data-checkout]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const t = tenants.find(x=>x.id===btn.dataset.checkout);
+        const date = prompt('Tarehe ya kutoka (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
+        if(date===null) return;
+        t.status='left';
+        t.moveOutDate = date;
+        await saveTenants();
+        toast('Mpangaji ameondolewa kwenye orodha ya wanaoishi');
+        renderWapangaji();
+      });
+    });
+    bodyEl.querySelectorAll('[data-view-tenant]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        selectedTenantId = a.dataset.viewTenant;
+        activeTab = 'tenantDetail';
+        render();
+        window.scrollTo(0,0);
+      });
+    });
+  }
+
+  // ---------- TAARIFA BINAFSI YA MPANGAJI ----------
+  function renderTenantDetail(){
+    const t = tenants.find(x=>x.id===selectedTenantId);
+    if(!t){
+      bodyEl.innerHTML = `<div class="db-empty">Mpangaji hajapatikana.</div>`;
+      return;
+    }
+    const rent = Number(t.rentAmount||0);
+    const paid = paidTotalFor(t.id);
+    const d = debtBreakdown(t);
+    const months = monthsElapsed(t);
+    const history = payments.filter(p=>p.tenantId===t.id).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+    const statementText = buildStatementForTenant(t);
+    const waLink = t.phone ? ('https://wa.me/'+toIntlPhone(t.phone)+'?text='+encodeURIComponent(statementText)) : '';
+    const smsLink = t.phone ? ('sms:'+t.phone+'?&body='+encodeURIComponent(statementText)) : '';
+    const waBtnHtml = t.phone ? ('<a class="db-btn" style="background:#2F6B4F;text-decoration:none;display:inline-block;" href="'+waLink+'" target="_blank">Tuma WhatsApp</a>') : '';
+    const smsBtnHtml = t.phone ? ('<a class="db-btn secondary" style="text-decoration:none;display:inline-block;" href="'+smsLink+'">Tuma SMS</a>') : '';
+    const noPhoneNoteHtml = !t.phone ? '<span style="font-size:12px;color:var(--ink-soft);align-self:center;">Ongeza namba ya simu ya mpangaji ili kutuma moja kwa moja</span>' : '';
+
+    const histRowsHtml2 = history.map(p=>{
+      const waReceiptBtn = t.phone ? ('<a class="db-btn small" style="background:#2F6B4F;text-decoration:none;display:inline-block;" href="'+waLinkForReceipt(p)+'" target="_blank">WhatsApp</a>') : '';
+      return '<tr><td class="db-mono">'+fmtDate(p.date)+'</td><td>'+fmtMonth(p.forMonth)+'</td><td class="db-mono">'+money(p.amount)+'</td><td>'+(p.notes||'—')+'</td><td><div class="db-actions-row"><button class="db-btn secondary small" data-print-receipt="'+p.id+'">Risiti</button>'+waReceiptBtn+'</div></td></tr>';
+    }).join('');
+    const histTableHtml2 = history.length
+      ? ('<table class="db-table"><thead><tr><th>Tarehe</th><th>Mwezi aliolipia</th><th>Kiasi</th><th>Maelezo</th><th></th></tr></thead><tbody>'+histRowsHtml2+'</tbody></table>')
+      : '<div class="db-empty">Bado hakuna malipo yaliyorekodiwa kwa mpangaji huyu.</div>';
+
+    bodyEl.innerHTML = `
+      <button class="db-btn secondary small" id="back-to-list" style="margin-bottom:14px;">&larr; Rudi kwenye orodha</button>
+      <div class="db-section-title">${t.name}</div>
+      <div class="db-cards">
+        <div class="db-card"><div class="db-card-num">${propertyName(propertyOfRoom(t.roomId))}</div><div class="db-card-label">Nyumba</div></div>
+        <div class="db-card"><div class="db-card-num">${roomName(t.roomId)}</div><div class="db-card-label">Chumba</div></div>
+        <div class="db-card"><div class="db-card-num">${rent?money(rent):'—'}</div><div class="db-card-label">Kodi ya mwezi</div></div>
+        <div class="db-card"><div class="db-card-num">${months}</div><div class="db-card-label">Miezi tangu aingie</div></div>
+        <div class="db-card"><div class="db-card-num" style="color:var(--paid)">${money(paid)}</div><div class="db-card-label">Jumla amelipa</div></div>
+        <div class="db-card"><div class="db-card-num" style="color:${d&&d.thisMonthDue>0?'var(--unpaid)':'var(--paid)'}">${d?(d.thisMonthDue>0?money(d.thisMonthDue):'0'):'—'}</div><div class="db-card-label">Deni la mwezi huu</div></div>
+        <div class="db-card"><div class="db-card-num" style="color:${d&&d.arrears>0?'var(--unpaid)':'var(--paid)'}">${d?(d.arrears>0?money(d.arrears):'0'):'—'}</div><div class="db-card-label">Deni la nyuma</div></div>
+      </div>
+
+      <div class="db-form">
+        <div class="db-section-title">Ankara ya kutuma kwa mpangaji</div>
+        <textarea id="statement-text" readonly rows="9" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:7px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;background:#fff;">${statementText}</textarea>
+        <div class="db-actions-row" style="margin-top:10px;">
+          ${waBtnHtml}
+          ${smsBtnHtml}
+          <button class="db-btn secondary" id="copy-statement">Nakili maandishi</button>
+          ${noPhoneNoteHtml}
+        </div>
+      </div>
+
+      <div class="db-table-wrap">
+        ${histTableHtml2}
+      </div>
+    `;
+
+    document.getElementById('back-to-list').addEventListener('click', ()=>{
+      activeTab = 'wapangaji';
+      render();
+    });
+    bodyEl.querySelectorAll('[data-print-receipt]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ printReceipt(btn.dataset.printReceipt); });
+    });
+    document.getElementById('copy-statement').addEventListener('click', async ()=>{
+      const ta = document.getElementById('statement-text');
+      try{
+        await navigator.clipboard.writeText(ta.value);
+        toast('Maandishi yamenakiliwa');
+      }catch(e){
+        ta.select();
+        try{ document.execCommand('copy'); toast('Maandishi yamenakiliwa'); }
+        catch(e2){ toast('Chagua maandishi na unakili wewe mwenyewe'); }
+      }
+    });
+  }
+
+  // ---------- MALIPO ----------
+  function renderMalipo(){
+    const tenantOptions = tenants.map(t=>`<option value="${t.id}">${t.name} — ${propertyName(propertyOfRoom(t.roomId))} / ${roomName(t.roomId)}</option>`).join('');
+
+    const sorted = payments.slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+    const filteredPayments = searchMalipo
+      ? sorted.filter(p=>{
+          const q = searchMalipo.toLowerCase();
+          return tenantName(p.tenantId).toLowerCase().includes(q)
+            || propertyName(propertyOfRoom(p.roomId)).toLowerCase().includes(q)
+            || roomName(p.roomId).toLowerCase().includes(q)
+            || fmtMonth(p.forMonth).toLowerCase().includes(q)
+            || (p.notes||'').toLowerCase().includes(q);
+        })
+      : sorted;
+    const rows = filteredPayments.map(p=>{
+      const hasPhone = tenants.find(x=>x.id===p.tenantId && x.phone);
+      const waBtn = hasPhone ? ('<a class="db-btn small" style="background:#2F6B4F;text-decoration:none;display:inline-block;" href="'+waLinkForReceipt(p)+'" target="_blank">WhatsApp</a>') : '';
+      return '<tr><td class="db-mono">'+fmtDate(p.date)+'</td><td>'+tenantName(p.tenantId)+'</td><td>'+propertyName(propertyOfRoom(p.roomId))+'</td><td>'+roomName(p.roomId)+'</td><td>'+fmtMonth(p.forMonth)+'</td><td class="db-mono">'+money(p.amount)+'</td><td>'+(p.notes||'—')+'</td><td><div class="db-actions-row"><button class="db-btn secondary small" data-print-receipt="'+p.id+'">Risiti</button>'+waBtn+'<button class="db-btn danger small" data-del-payment="'+p.id+'">Futa</button></div></td></tr>';
+    }).join('');
+
+    const malipoTableHtml = filteredPayments.length
+      ? ('<table class="db-table"><thead><tr><th>Tarehe</th><th>Mpangaji</th><th>Nyumba</th><th>Chumba</th><th>Mwezi</th><th>Kiasi</th><th>Maelezo</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>')
+      : ('<div class="db-empty">'+(searchMalipo ? 'Hakuna malipo yaliyopatikana.' : 'Bado hakuna malipo yaliyorekodiwa.')+'</div>');
+
+    bodyEl.innerHTML = `
+      <div class="db-form">
+        <div class="db-section-title">Rekodi malipo</div>
+        <div class="db-form-grid">
+          <div class="db-field"><label>Mpangaji</label><select id="pay-tenant"><option value="">-- Chagua --</option>${tenantOptions}</select></div>
+          <div class="db-field"><label>Tarehe ya malipo</label><input id="pay-date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+          <div class="db-field"><label>Analipia mwezi gani</label><input id="pay-month" type="month" value="${new Date().toISOString().slice(0,7)}"></div>
+          <div class="db-field"><label>Kiasi</label><input id="pay-amount" type="number" placeholder="mfano: 150000"></div>
+          <div class="db-field"><label>Maelezo (si lazima)</label><input id="pay-notes" placeholder="mfano: malipo ya nusu"></div>
+        </div>
+        <button class="db-btn" id="save-payment">Hifadhi malipo</button>
+      </div>
+      <div class="db-section-title"><span>Historia ya malipo</span><input type="text" class="db-search" id="search-malipo" placeholder="Tafuta mpangaji, chumba, mwezi..." value="${searchMalipo}"></div>
+      <div class="db-table-wrap">
+        ${malipoTableHtml}
+      </div>
+    `;
+
+    bindSearchInput('search-malipo', v=>{ searchMalipo=v; });
+    bindEnterToClick(['pay-date','pay-month','pay-amount','pay-notes'], 'save-payment');
+
+    document.getElementById('save-payment').addEventListener('click', async ()=>{
+      const tenantId = document.getElementById('pay-tenant').value;
+      const date = document.getElementById('pay-date').value;
+      const forMonth = document.getElementById('pay-month').value;
+      const amount = document.getElementById('pay-amount').value;
+      const notes = document.getElementById('pay-notes').value.trim();
+      if(!tenantId){ toast('Chagua mpangaji'); return; }
+      if(!date || !forMonth){ toast('Jaza tarehe na mwezi'); return; }
+      if(!amount || Number(amount)<=0){ toast('Andika kiasi sahihi'); return; }
+      const t = tenants.find(x=>x.id===tenantId);
+      payments.push({id: uid(), tenantId, roomId: t.roomId, date, forMonth, amount, notes});
+      await savePayments();
+      toast('Malipo yamehifadhiwa');
+      renderMalipo();
+    });
+
+    bodyEl.querySelectorAll('[data-print-receipt]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ printReceipt(btn.dataset.printReceipt); });
+    });
+    bodyEl.querySelectorAll('[data-del-payment]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        payments = payments.filter(p=>p.id!==btn.dataset.delPayment);
+        await savePayments();
+        renderMalipo();
+      });
+    });
+  }
+
+  // init
+  (async ()=>{
+    bodyEl.innerHTML = `<div class="db-empty">Inapakia...</div>`;
+    await loadAll();
+    render();
+  })();
+})();
+</script>
