@@ -470,7 +470,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
 <script>
   const firebaseConfig = {
-    apiKey: "AIzaSyAdmoruLuoUpgSttHH3taeXjBPxFIkjxCM",
+    apiKey: "AIzaSyAdmoruLuoUpgSttHH3taeXjBPxflkjxCM",
     authDomain: "daftari-la-kodi.firebaseapp.com",
     projectId: "daftari-la-kodi",
     storageBucket: "daftari-la-kodi.firebasestorage.app",
@@ -548,6 +548,27 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     return n.toLocaleString('en-US');
   }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function addPasswordToggles(container){
+    container.querySelectorAll('input[type="password"]').forEach(input=>{
+      if(input.dataset.pwToggled) return;
+      input.dataset.pwToggled = '1';
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'relative';
+      input.parentNode.insertBefore(wrapper, input);
+      wrapper.appendChild(input);
+      input.style.paddingRight = '42px';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'Onyesha';
+      btn.style.cssText = 'position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:11px;font-weight:600;padding:4px 6px;color:var(--gold-deep);';
+      btn.addEventListener('click', ()=>{
+        if(input.type==='password'){ input.type='text'; btn.textContent='Ficha'; }
+        else { input.type='password'; btn.textContent='Onyesha'; }
+      });
+      wrapper.appendChild(btn);
+    });
+  }
+
   function bindEnterToClick(inputIds, buttonId){
     inputIds.forEach(id=>{
       const el = document.getElementById(id);
@@ -1064,6 +1085,7 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     });
     document.getElementById('reg-back').addEventListener('click', ()=>{ viewMode='home'; render(); });
     bindEnterToClick(['reg-name','reg-phone','reg-username','reg-password','reg-password2'], 'reg-submit');
+    addPasswordToggles(bodyEl);
 
     submitBtn.addEventListener('click', async ()=>{
       const name = document.getElementById('reg-name').value.trim();
@@ -1123,6 +1145,7 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     `;
     document.getElementById('login-back').addEventListener('click', ()=>{ viewMode='home'; render(); });
     bindEnterToClick(['login-username','login-password'], 'login-submit');
+    addPasswordToggles(bodyEl);
     document.getElementById('login-submit').addEventListener('click', async ()=>{
       const username = document.getElementById('login-username').value.trim().toLowerCase();
       const password = document.getElementById('login-password').value;
@@ -1160,6 +1183,7 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     `;
     document.getElementById('login-back').addEventListener('click', ()=>{ viewMode='home'; render(); });
     bindEnterToClick(['login-username','login-password'], 'login-submit');
+    addPasswordToggles(bodyEl);
     document.getElementById('login-submit').addEventListener('click', async ()=>{
       const username = document.getElementById('login-username').value.trim().toLowerCase();
       const password = document.getElementById('login-password').value;
@@ -1204,6 +1228,7 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     `;
     document.getElementById('setup-back').addEventListener('click', ()=>{ viewMode='home'; render(); });
     bindEnterToClick(['setup-username','setup-password','setup-password2'], 'setup-submit');
+    addPasswordToggles(bodyEl);
     document.getElementById('setup-submit').addEventListener('click', async ()=>{
       const username = document.getElementById('setup-username').value.trim().toLowerCase();
       const password = document.getElementById('setup-password').value;
@@ -1286,6 +1311,7 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
       </div>
     `;
     bindEnterToClick(['fcp-old','fcp-new','fcp-new2'], 'fcp-submit');
+    addPasswordToggles(bodyEl);
     document.getElementById('fcp-submit').addEventListener('click', async ()=>{
       const oldPass = document.getElementById('fcp-old').value;
       const newPass = document.getElementById('fcp-new').value;
@@ -1368,6 +1394,7 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
         <button class="db-btn secondary" id="tp-change-pw">Badilisha Password</button>
       </div>
     `;
+    addPasswordToggles(bodyEl);
 
     document.getElementById('send-feedback').addEventListener('click', async ()=>{
       const msg = document.getElementById('feedback-text').value.trim();
