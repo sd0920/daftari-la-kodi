@@ -946,6 +946,7 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
 
   function render(){
     if(headerEl) headerEl.style.display = (viewMode==='home') ? 'none' : '';
+    bodyEl.style.background = '';
     if(viewMode==='home'){ tabsEl.innerHTML=''; renderHome(); return; }
     if(viewMode==='register'){ tabsEl.innerHTML=''; renderRegister(); return; }
     if(viewMode==='tenantLogin'){ tabsEl.innerHTML=''; renderTenantLogin(); return; }
@@ -953,12 +954,16 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     if(viewMode==='landlordSetup'){ tabsEl.innerHTML=''; renderLandlordSetup(); return; }
     if(viewMode==='forceChangePassword'){ tabsEl.innerHTML=''; renderForceChangePassword(); return; }
     if(viewMode==='tenantPendingNotice'){ tabsEl.innerHTML=''; renderTenantPendingNotice(); return; }
-    if(viewMode==='tenantPortal'){ tabsEl.innerHTML = `<div style="padding:10px 16px;text-align:right;width:100%;"><a href="#" id="tenant-logout" style="font-size:12px;color:var(--ink-soft);text-decoration:underline;cursor:pointer;">Toka</a></div>`; renderTenantPortal();
+    if(viewMode==='tenantPortal'){
+      tabsEl.innerHTML = `<div style="padding:10px 16px;text-align:right;width:100%;"><a href="#" id="tenant-logout" style="font-size:12px;color:var(--ink-soft);text-decoration:underline;cursor:pointer;">Toka</a></div>`;
+      bodyEl.style.background = "linear-gradient(rgba(239,234,224,0.88), rgba(239,234,224,0.88)), url('"+IMG_TENANT_LOGIN+"') center/cover fixed";
+      renderTenantPortal();
       const lo = document.getElementById('tenant-logout');
       if(lo) lo.addEventListener('click', async (e)=>{ e.preventDefault(); await auth.signOut(); currentUser=null; currentProfile=null; viewMode='home'; render(); });
       return;
     }
     // admin
+    bodyEl.style.background = "linear-gradient(rgba(239,234,224,0.88), rgba(239,234,224,0.88)), url('"+IMG_LANDLORD_LOGIN+"') center/cover fixed";
     renderTabs();
     if(activeTab==='muhtasari') renderMuhtasari();
     else if(activeTab==='nyumba') renderNyumba();
