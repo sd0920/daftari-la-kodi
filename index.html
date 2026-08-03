@@ -649,6 +649,30 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     return rooms.filter(r => !tenants.some(t=>t.roomId===r.id && t.status==='active'));
   }
 
+  // Inasoma faili la picha na kuipunguza ukubwa (max 500px upande mrefu zaidi)
+  // kabla ya kuihifadhi kama base64 ndani ya Firestore (kuepuka picha kubwa mno)
+  function resizeImageFile(file, maxDim=500, quality=0.75){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = (e)=>{
+        const img = new Image();
+        img.onload = ()=>{
+          let w = img.width, h = img.height;
+          if(w > h && w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
+          else if(h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   function generatePassword(len=8){
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
     let out = '';
@@ -1074,6 +1098,11 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
           <div class="db-field"><label>Password</label><input id="reg-password" type="password" placeholder="Angalau herufi 6"></div>
           <div class="db-field"><label>Thibitisha password</label><input id="reg-password2" type="password" placeholder="Rudia password"></div>
         </div>
+        <div class="db-field" style="margin-bottom:16px;">
+          <label>Picha yako (lazima) — piga picha au chagua kutoka simu</label>
+          <input id="reg-photo" type="file" accept="image/*" capture="user">
+          <div id="reg-photo-preview" style="margin-top:8px;"></div>
+        </div>
         <div id="reg-error" style="color:var(--unpaid);font-size:12.5px;margin-bottom:10px;"></div>
         <div class="db-actions-row">
           <button class="db-btn" id="reg-submit" disabled style="opacity:0.5;">Jisajili</button>
@@ -1092,6 +1121,21 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     bindEnterToClick(['reg-name','reg-phone','reg-username','reg-password','reg-password2'], 'reg-submit');
     addPasswordToggles(bodyEl);
 
+    let regPhotoData = null;
+    document.getElementById('reg-photo').addEventListener('change', async (e)=>{
+      const file = e.target.files[0];
+      const previewEl = document.getElementById('reg-photo-preview');
+      if(!file){ regPhotoData = null; previewEl.innerHTML=''; return; }
+      previewEl.innerHTML = '<span style="font-size:12px;color:var(--ink-soft);">Inapakia picha...</span>';
+      try{
+        regPhotoData = await resizeImageFile(file);
+        previewEl.innerHTML = '<img src="'+regPhotoData+'" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--border);">';
+      }catch(err){
+        previewEl.innerHTML = '<span style="font-size:12px;color:var(--unpaid);">Imeshindwa kusoma picha, jaribu tena.</span>';
+        regPhotoData = null;
+      }
+    });
+
     submitBtn.addEventListener('click', async ()=>{
       const name = document.getElementById('reg-name').value.trim();
       const phone = document.getElementById('reg-phone').value.trim();
@@ -1102,6 +1146,7 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
       errEl.textContent = '';
       if(!agreeBox.checked){ errEl.textContent = 'Lazima ukubali masharti kwanza.'; return; }
       if(!name || !phone || !username){ errEl.textContent = 'Jaza taarifa zote.'; return; }
+      if(!regPhotoData){ errEl.textContent = 'Lazima uweke picha yako kabla ya kujisajili.'; return; }
       if(password.length < 6){ errEl.textContent = 'Password iwe angalau herufi 6.'; return; }
       if(password !== password2){ errEl.textContent = 'Password hazifanani.'; return; }
       submitBtn.disabled = true; submitBtn.textContent = 'Inasajili...';
@@ -1110,12 +1155,12 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         const uid = cred.user.uid;
         userProfiles[uid] = {
-          role:'tenant', tenantId:null, username, phone, name,
+          role:'tenant', tenantId:null, username, phone, name, photoData: regPhotoData,
           passwordLastChanged: new Date().toISOString().slice(0,10),
           mustChangePassword:false, status:'pending'
         };
         await saveUserProfiles();
-        pendingRegistrations.push({uid, name, phone, username, submittedAt: new Date().toISOString().slice(0,10), status:'pending'});
+        pendingRegistrations.push({uid, name, phone, username, photoData: regPhotoData, submittedAt: new Date().toISOString().slice(0,10), status:'pending'});
         await savePendingRegistrations();
         await auth.signOut();
         toast('Umesajiliwa! Subiri uthibitishwe na mwenye nyumba.');
@@ -1442,12 +1487,15 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     const rowsHtml = pending.map(r=>{
       const selVal = pendingRoomChoice[r.uid] || '';
       const opts = '<option value="">-- Chagua chumba --</option>' + vacant.map(rm=>'<option value="'+rm.id+'"'+(selVal===rm.id?' selected':'')+'>'+propertyName(rm.propertyId)+' - '+rm.name+'</option>').join('');
-      return '<tr><td>'+r.name+'</td><td class="db-mono">'+r.phone+'</td><td class="db-mono">'+r.username+'</td><td class="db-mono">'+fmtDate(r.submittedAt)+'</td>'
+      const photoHtml = r.photoData
+        ? ('<img src="'+r.photoData+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);">')
+        : '<span class="db-badge badge-left">Hana picha</span>';
+      return '<tr><td>'+photoHtml+'</td><td>'+r.name+'</td><td class="db-mono">'+r.phone+'</td><td class="db-mono">'+r.username+'</td><td class="db-mono">'+fmtDate(r.submittedAt)+'</td>'
         + '<td><select class="db-search" data-room-choice="'+r.uid+'" style="max-width:220px;">'+opts+'</select></td>'
         + '<td><div class="db-actions-row"><button class="db-btn small" data-verify="'+r.uid+'">Thibitisha</button><button class="db-btn danger small" data-reject="'+r.uid+'">Kataa</button></div></td></tr>';
     }).join('');
     const tableHtml = pending.length
-      ? ('<table class="db-table"><thead><tr><th>Jina</th><th>Simu</th><th>Username</th><th>Aliomba</th><th>Mpe chumba</th><th></th></tr></thead><tbody>'+rowsHtml+'</tbody></table>')
+      ? ('<table class="db-table"><thead><tr><th>Picha</th><th>Jina</th><th>Simu</th><th>Username</th><th>Aliomba</th><th>Mpe chumba</th><th></th></tr></thead><tbody>'+rowsHtml+'</tbody></table>')
       : '<div class="db-empty">Hakuna usajili unaosubiri kwa sasa.</div>';
 
     bodyEl.innerHTML = `
@@ -1469,7 +1517,7 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
         tenants.push({
           id:newTenantId, name:reg.name, phone:reg.phone, roomId,
           rentAmount:'', moveInDate: new Date().toISOString().slice(0,10),
-          notes:'', status:'active', moveOutDate:''
+          notes:'', status:'active', moveOutDate:'', photoData: reg.photoData || ''
         });
         await saveTenants();
         reg.status='verified';
@@ -1787,9 +1835,18 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
       totalPaidThisMonth += paid;
       if(d && d.total>0){ totalOwedAll += d.total; wenyeDeni++; }
       let statusHtml;
-      if(expected > 0 && paid >= expected){ statusHtml = `<span class="db-badge badge-paid">Amelipa kamili</span>`; waliolipa++; }
-      else if(paid > 0){ statusHtml = `<span class="db-badge badge-partial">Amelipa kiasi</span>`; sehemu++; }
-      else { statusHtml = `<span class="db-badge badge-unpaid">Hajalipa</span>`; hawajalipa++; }
+      if(d===null){
+        // hakuna kodi iliyowekwa, tumia mantiki ya zamani ya mwezi huu tu
+        if(expected > 0 && paid >= expected){ statusHtml = `<span class="db-badge badge-paid">Amelipa kamili</span>`; waliolipa++; }
+        else if(paid > 0){ statusHtml = `<span class="db-badge badge-partial">Amelipa kiasi</span>`; sehemu++; }
+        else { statusHtml = `<span class="db-badge badge-unpaid">Hajalipa</span>`; hawajalipa++; }
+      } else if(d.total <= 0){
+        statusHtml = `<span class="db-badge badge-paid">Amelipa kamili</span>`; waliolipa++;
+      } else if(d.thisMonthDue < expected){
+        statusHtml = `<span class="db-badge badge-partial">Amelipa kiasi</span>`; sehemu++;
+      } else {
+        statusHtml = `<span class="db-badge badge-unpaid">Hajalipa</span>`; hawajalipa++;
+      }
       const oweHtml = oweBadgeHtml(t);
       const kumbushaHtml = (d && d.total>0 && t.phone)
         ? ('<a class="db-btn small" style="background:#2F6B4F;text-decoration:none;display:inline-block;" href="https://wa.me/'+toIntlPhone(t.phone)+'?text='+encodeURIComponent(buildStatementForTenant(t))+'" target="_blank">Kumbusha (WhatsApp)</a>')
@@ -1983,7 +2040,11 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
       const createAcctBtnHtml = (t.status==='active' && !hasLoginAccount(t.id))
         ? ('<button class="db-btn secondary small" data-create-account="'+t.id+'">Tengeneza Akaunti</button>')
         : '';
+      const photoHtml = t.photoData
+        ? ('<img src="'+t.photoData+'" style="width:36px;height:36px;object-fit:cover;border-radius:50%;border:1px solid var(--border);">')
+        : '<span style="font-size:11px;color:var(--ink-soft);">—</span>';
       return `<tr>
+        <td>${photoHtml}</td>
         <td><a href="#" data-view-tenant="${t.id}" style="color:var(--ink);font-weight:600;text-decoration:underline;text-decoration-color:var(--border);cursor:pointer;">${t.name}</a></td>
         <td class="db-mono">${t.phone||'—'}</td>
         <td>${propertyName(propertyOfRoom(t.roomId))}</td>
@@ -2004,7 +2065,7 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
 
     const cancelEditTenantHtml = editing ? '<button class="db-btn secondary" id="cancel-edit">Ghairi</button>' : '';
     const wapangajiTableHtml = filteredTenants.length
-      ? ('<table class="db-table"><thead><tr><th>Jina</th><th>Simu</th><th>Nyumba</th><th>Chumba</th><th>Aliingia</th><th>Alitoka</th><th>Hali</th><th>Deni</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>')
+      ? ('<table class="db-table"><thead><tr><th>Picha</th><th>Jina</th><th>Simu</th><th>Nyumba</th><th>Chumba</th><th>Aliingia</th><th>Alitoka</th><th>Hali</th><th>Deni</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>')
       : ('<div class="db-empty">'+(searchWapangaji ? 'Hakuna mpangaji aliyepatikana.' : 'Bado hujaongeza mpangaji yeyote.')+'</div>');
 
     bodyEl.innerHTML = `
@@ -2145,7 +2206,10 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
 
     bodyEl.innerHTML = `
       <button class="db-btn secondary small" id="back-to-list" style="margin-bottom:14px;">&larr; Rudi kwenye orodha</button>
-      <div class="db-section-title">${t.name}</div>
+      <div class="db-section-title">
+        ${t.photoData ? '<img src="'+t.photoData+'" style="width:44px;height:44px;object-fit:cover;border-radius:50%;border:1px solid var(--border);margin-right:10px;vertical-align:middle;">' : ''}
+        <span style="vertical-align:middle;">${t.name}</span>
+      </div>
       <div class="db-cards">
         <div class="db-card"><div class="db-card-num">${propertyName(propertyOfRoom(t.roomId))}</div><div class="db-card-label">Nyumba</div></div>
         <div class="db-card"><div class="db-card-num">${roomName(t.roomId)}</div><div class="db-card-label">Chumba</div></div>
