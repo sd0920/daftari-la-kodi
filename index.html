@@ -959,6 +959,8 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     });
     await saveRooms();
     await savePayments();
+    appConfig.hasReconciled = true;
+    await saveAppConfig();
     toast(changed ? `Malipo yamesahihishwa: mabadiliko ${changed}` : 'Hakuna tofauti iliyopatikana');
   }
 
@@ -1974,7 +1976,11 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     }).join('');
 
     const alreadyImported = tenants.some(t=>IMPORT_DATA.tenants.some(it=>it.id===t.id));
-    const reconcileBtnHtml = alreadyImported ? '<button class="db-btn secondary" id="reconcile-excel" style="margin-left:8px;">Sahihisha malipo kwa Excel mpya</button>' : '';
+    const reconcileBtnHtml = alreadyImported
+      ? (appConfig.hasReconciled
+          ? '<button class="db-btn secondary" disabled style="margin-left:8px;opacity:0.5;cursor:not-allowed;">Tayari imesahihishwa ✓</button>'
+          : '<button class="db-btn secondary" id="reconcile-excel" style="margin-left:8px;">Sahihisha malipo kwa Excel mpya</button>')
+      : '';
     const cancelEditPropHtml = editing ? '<button class="db-btn secondary" id="cancel-edit-property">Ghairi</button>' : '';
     const nyumbaTableHtml = filteredProps.length
       ? ('<table class="db-table"><thead><tr><th>Nyumba</th><th>Idadi ya vyumba</th><th>Wapangaji wanaoishi</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>')
@@ -2019,6 +2025,8 @@ const CORRECTED_PAYMENTS_2026 = {"tenant_room_No01":{"01":70000,"02":70000,"03":
     const reconcileBtn = document.getElementById('reconcile-excel');
     if(reconcileBtn){
       reconcileBtn.addEventListener('click', async ()=>{
+        const sure = confirm('Hii itasahihisha mara MOJA TU majina ya vyumba vya Nyumba Mpya na baadhi ya malipo ya awali kutoka Excel. Baada ya hapo, kitufe hiki hakitatumika tena. Endelea?');
+        if(!sure) return;
         reconcileBtn.disabled = true;
         reconcileBtn.textContent = 'Inasahihisha...';
         await reconcileWithNewExcel();
