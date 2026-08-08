@@ -1029,12 +1029,26 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
   function renderTabs(){
     tabsEl.innerHTML = TABS.map(t=>
       `<button class="db-tab ${activeTab===t.id?'active':''}" data-tab="${t.id}">${t.label}</button>`
-    ).join('') + `<button class="db-tab" id="exit-admin-btn" style="max-width:110px;color:var(--ink-soft);">Toka</button>`;
+    ).join('')
+      + `<button class="db-tab" id="refresh-all-btn" style="max-width:100px;color:var(--gold-deep);">⟳ Sasisha</button>`
+      + `<button class="db-tab" id="exit-admin-btn" style="max-width:110px;color:var(--ink-soft);">Toka</button>`;
     tabsEl.querySelectorAll('.db-tab[data-tab]').forEach(btn=>{
       btn.addEventListener('click', ()=>{ activeTab = btn.dataset.tab; render(); });
     });
     const exitBtn = document.getElementById('exit-admin-btn');
     if(exitBtn) exitBtn.addEventListener('click', async ()=>{ await auth.signOut(); currentUser=null; currentProfile=null; viewMode='home'; render(); });
+    const refreshBtn = document.getElementById('refresh-all-btn');
+    if(refreshBtn) refreshBtn.addEventListener('click', async ()=>{
+      refreshBtn.disabled = true; refreshBtn.textContent = '...';
+      try{
+        await loadAll();
+        toast('Taarifa zote zimesasishwa');
+        render();
+      }catch(e){
+        toast('Imeshindwa kusasisha, jaribu tena');
+        refreshBtn.disabled = false; refreshBtn.textContent = '⟳ Sasisha';
+      }
+    });
   }
 
   function needsPasswordChange(profile){
@@ -1281,14 +1295,21 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
         const email = username + EMAIL_DOMAIN;
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         const uid = cred.user.uid;
+        const submittedAt = new Date().toISOString().slice(0,10);
         userProfiles[uid] = {
           role:'tenant', tenantId:null, username, phone, name, photoData: regPhotoData, ...profileExtra,
-          passwordLastChanged: new Date().toISOString().slice(0,10),
+          passwordLastChanged: new Date().toISOString().slice(0,10), submittedAt,
           mustChangePassword:false, status:'pending'
         };
         await saveUserProfiles();
-        pendingRegistrations.push({uid, name, phone, username, photoData: regPhotoData, ...profileExtra, submittedAt: new Date().toISOString().slice(0,10), status:'pending'});
-        await savePendingRegistrations();
+        try{
+          pendingRegistrations.push({uid, name, phone, username, photoData: regPhotoData, ...profileExtra, submittedAt, status:'pending'});
+          await savePendingRegistrations();
+        }catch(e){
+          // Si tatizo kubwa: userProfiles (juu) tayari ina taarifa zote,
+          // na tab ya Uthibitishaji inasoma kutoka humo moja kwa moja pia.
+          console.error('savePendingRegistrations imeshindwa, lakini userProfiles tayari imehifadhiwa', e);
+        }
         await auth.signOut();
         toast('Umesajiliwa! Subiri uthibitishwe na mwenye nyumba.');
         viewMode='home';
@@ -1699,21 +1720,29 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
 
   // ---------- ADMIN: UTHIBITISHAJI WA WAPANGAJI WAPYA ----------
   function renderUthibitishaji(){
-    const pending = pendingRegistrations.filter(r=>r.status==='pending');
+    // Chanzo cha msingi ni userProfiles (kila mpangaji aliyejisajili anahifadhiwa humo
+    // moja kwa moja), si pendingRegistrations pekee — hii inazuia matatizo kama hati
+    // ya pendingRegistrations ikikosekana kwa sababu yoyote, usajili usipotee.
+    const pendingUids = Object.keys(userProfiles).filter(uid=>{
+      const p = userProfiles[uid];
+      return p.role==='tenant' && p.status==='pending';
+    });
     const vacant = vacantRooms();
-    const roomOpts = vacant.map(r=>'<option value="'+r.id+'">'+propertyName(r.propertyId)+' - '+r.name+'</option>').join('');
 
-    const rowsHtml = pending.map(r=>{
-      const selVal = pendingRoomChoice[r.uid] || '';
+    const rowsHtml = pendingUids.map(regUid=>{
+      const p = userProfiles[regUid];
+      const regEntry = pendingRegistrations.find(r=>r.uid===regUid);
+      const submittedAt = p.submittedAt || (regEntry && regEntry.submittedAt) || p.passwordLastChanged || '';
+      const selVal = pendingRoomChoice[regUid] || '';
       const opts = '<option value="">-- Chagua chumba --</option>' + vacant.map(rm=>'<option value="'+rm.id+'"'+(selVal===rm.id?' selected':'')+'>'+propertyName(rm.propertyId)+' - '+rm.name+'</option>').join('');
-      const photoHtml = r.photoData
-        ? ('<img src="'+r.photoData+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);">')
+      const photoHtml = p.photoData
+        ? ('<img src="'+p.photoData+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);">')
         : '<span class="db-badge badge-left">Hana picha</span>';
-      return '<tr><td>'+photoHtml+'</td><td>'+r.name+'</td><td class="db-mono">'+r.phone+'</td><td class="db-mono">'+r.username+'</td><td class="db-mono">'+fmtDate(r.submittedAt)+'</td>'
-        + '<td><select class="db-search" data-room-choice="'+r.uid+'" style="max-width:220px;">'+opts+'</select></td>'
-        + '<td><div class="db-actions-row"><button class="db-btn small" data-verify="'+r.uid+'">Thibitisha</button><button class="db-btn danger small" data-reject="'+r.uid+'">Kataa</button></div></td></tr>';
+      return '<tr><td>'+photoHtml+'</td><td>'+(p.name||'—')+'</td><td class="db-mono">'+(p.phone||'—')+'</td><td class="db-mono">'+(p.username||'—')+'</td><td class="db-mono">'+(submittedAt?fmtDate(submittedAt):'—')+'</td>'
+        + '<td><select class="db-search" data-room-choice="'+regUid+'" style="max-width:220px;">'+opts+'</select></td>'
+        + '<td><div class="db-actions-row"><button class="db-btn small" data-verify="'+regUid+'">Thibitisha</button><button class="db-btn danger small" data-reject="'+regUid+'">Kataa</button></div></td></tr>';
     }).join('');
-    const tableHtml = pending.length
+    const tableHtml = pendingUids.length
       ? ('<table class="db-table"><thead><tr><th>Picha</th><th>Jina</th><th>Simu</th><th>Username</th><th>Aliomba</th><th>Mpe chumba</th><th></th></tr></thead><tbody>'+rowsHtml+'</tbody></table>')
       : '<div class="db-empty">Hakuna usajili unaosubiri kwa sasa.</div>';
 
@@ -1730,24 +1759,22 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
         const regUid = btn.dataset.verify;
         const roomId = pendingRoomChoice[regUid];
         if(!roomId){ toast('Chagua chumba kwanza'); return; }
-        const reg = pendingRegistrations.find(r=>r.uid===regUid);
-        if(!reg) return;
+        const p = userProfiles[regUid];
+        if(!p){ toast('Taarifa za mpangaji huyu hazipatikani tena'); return; }
         const newTenantId = uid();
         tenants.push({
-          id:newTenantId, name:reg.name, phone:reg.phone, roomId,
+          id:newTenantId, name:p.name, phone:p.phone, roomId,
           rentAmount:'', moveInDate: new Date().toISOString().slice(0,10),
-          notes:'', status:'active', moveOutDate:'', photoData: reg.photoData || '',
-          gender: reg.gender||'', marital: reg.marital||'', boys: reg.boys||0, girls: reg.girls||0,
-          withParents: reg.withParents||'', age: reg.age||'', tribe: reg.tribe||'', job: reg.job||''
+          notes:'', status:'active', moveOutDate:'', photoData: p.photoData || '',
+          gender: p.gender||'', marital: p.marital||'', boys: p.boys||0, girls: p.girls||0,
+          withParents: p.withParents||'', age: p.age||'', tribe: p.tribe||'', job: p.job||''
         });
         await saveTenants();
-        reg.status='verified';
-        await savePendingRegistrations();
-        if(userProfiles[regUid]){
-          userProfiles[regUid].status='active';
-          userProfiles[regUid].tenantId=newTenantId;
-          await saveUserProfiles();
-        }
+        p.status='active';
+        p.tenantId=newTenantId;
+        await saveUserProfiles();
+        const reg = pendingRegistrations.find(r=>r.uid===regUid);
+        if(reg){ reg.status='verified'; await savePendingRegistrations(); }
         toast('Mpangaji amethibitishwa na kupewa chumba');
         renderUthibitishaji();
       });
@@ -1755,14 +1782,12 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
     bodyEl.querySelectorAll('[data-reject]').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         const regUid = btn.dataset.reject;
+        const p = userProfiles[regUid];
+        if(!p){ toast('Taarifa za mpangaji huyu hazipatikani tena'); return; }
+        p.status='rejected';
+        await saveUserProfiles();
         const reg = pendingRegistrations.find(r=>r.uid===regUid);
-        if(!reg) return;
-        reg.status='rejected';
-        await savePendingRegistrations();
-        if(userProfiles[regUid]){
-          userProfiles[regUid].status='rejected';
-          await saveUserProfiles();
-        }
+        if(reg){ reg.status='rejected'; await savePendingRegistrations(); }
         toast('Usajili umekataliwa');
         renderUthibitishaji();
       });
