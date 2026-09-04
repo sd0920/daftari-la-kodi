@@ -803,11 +803,12 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
 
   function buildStatementForTenant(t){
     const rent = Number(t.rentAmount||0);
-    const paid = paidTotalFor(t.id);
     const d = debtBreakdown(t);
-    const history = payments.filter(p=>p.tenantId===t.id).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const bizName = siteContent.businessName || landlordInfo.name || '';
+    const hasDebt = d && d.total > 0;
     const lines = [
-      `ANKARA YA MADAI${landlordInfo.name ? ' - '+landlordInfo.name : ''}`,
+      bizName || null,
+      `ANKARA YA MADAI`,
       `Tarehe: ${fmtDate(new Date().toISOString().slice(0,10))}`,
       ``,
       `Jina: ${t.name}`,
@@ -815,14 +816,11 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
       `Chumba: ${roomName(t.roomId)}`,
       t.phone ? `Simu: ${t.phone}` : null,
       rent ? `Kodi ya mwezi: Tsh ${money(rent)}` : null,
-      `Jumla amelipa (tangu aingie): Tsh ${money(paid)}`,
       d ? `Deni la mwezi huu (${fmtMonth(d.thisYM)}): Tsh ${d.thisMonthDue>0?money(d.thisMonthDue):'0'}` : null,
       d && d.arrears>0 ? `Deni la nyuma (miezi iliyopita): Tsh ${money(d.arrears)}` : null,
-      d ? `JUMLA ANADAIWA: Tsh ${d.total>0?money(d.total):'0 (hana deni)'}` : null,
+      d ? `JUMLA UNADAIWA: Tsh ${d.total>0?money(d.total):'0 (hauna deni)'}` : null,
       ``,
-      `Historia ya malipo ya hivi karibuni:`,
-      ...history.slice(0,6).map(p=>`- ${fmtDate(p.date)}: Tsh ${money(p.amount)} (mwezi wa ${fmtMonth(p.forMonth)})`),
-      ``,
+      hasDebt ? `Lipa kodi yako sasa epuka usumbufu.` : `Asante kwa malipo yako, huna deni kwa sasa.`,
       landlordInfo.phone ? `Kwa maswali wasiliana: ${landlordInfo.phone}` : null,
     ].filter(Boolean);
     return lines.join('\n');
@@ -854,6 +852,37 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
   function paidTotalFor(tenantId){
     return payments.filter(p=>p.tenantId===tenantId)
       .reduce((s,p)=>s+Number(p.amount||0),0);
+  }
+
+  // Inagawa kiasi kimoja cha malipo kiotomatiki kuanzia mwezi wa kwanza
+  // ambao bado haujalipwa kikamilifu, kisha kuendelea mbele mwezi baada ya
+  // mwezi hadi pesa iishe. Hii inaepusha kuchagua "mwezi" kwa mkono kila wakati.
+  function allocatePaymentAuto(t, date, totalAmount, notes){
+    const newRecords = [];
+    const rent = Number(t.rentAmount||0);
+    if(!rent || !t.moveInDate){
+      // Hatuwezi kujua mgawanyo bila kodi/tarehe ya kuingia - rekodi kwa mwezi wa tarehe uliyoweka
+      newRecords.push({id: uid(), tenantId: t.id, roomId: t.roomId, date, forMonth: date.slice(0,7), amount: String(totalAmount), notes: notes||''});
+      return newRecords;
+    }
+    let remaining = Number(totalAmount);
+    const totalPaidSoFar = paidTotalFor(t.id);
+    const start = new Date(t.moveInDate + 'T00:00:00');
+    let monthsCovered = Math.floor(totalPaidSoFar / rent);
+    let partialInMonth = totalPaidSoFar - monthsCovered * rent;
+    let safety = 0;
+    while(remaining > 0 && safety < 240){
+      safety++;
+      const target = new Date(start.getFullYear(), start.getMonth() + monthsCovered, 1);
+      const forMonth = target.getFullYear() + '-' + String(target.getMonth()+1).padStart(2,'0');
+      const neededForThisMonth = rent - partialInMonth;
+      const amountForThisMonth = Math.min(remaining, neededForThisMonth);
+      newRecords.push({id: uid(), tenantId: t.id, roomId: t.roomId, date, forMonth, amount: String(amountForThisMonth), notes: notes||''});
+      remaining -= amountForThisMonth;
+      partialInMonth += amountForThisMonth;
+      if(partialInMonth >= rent){ monthsCovered++; partialInMonth = 0; }
+    }
+    return newRecords;
   }
   function monthsElapsed(t){
     if(!t.moveInDate) return 0;
@@ -2259,8 +2288,6 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
         setTimeout(()=>{
           const sel = document.getElementById('pay-tenant');
           if(sel){ sel.value = btn.dataset.record; }
-          const monthInput = document.getElementById('pay-month');
-          if(monthInput){ monthInput.value = dashMonth; }
         }, 0);
       });
     });
@@ -2646,10 +2673,10 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
     bodyEl.innerHTML = `
       <div class="db-form">
         <div class="db-section-title">Rekodi malipo</div>
+        <p style="font-size:12px;color:var(--ink-soft);margin:0 0 10px;">Weka tarehe na kiasi tu — mfumo utagawa pesa hii kiotomatiki kuanzia mwezi wa kwanza ambao bado haujalipwa kikamilifu, kisha kuendelea mbele.</p>
         <div class="db-form-grid">
           <div class="db-field"><label>Mpangaji</label><select id="pay-tenant"><option value="">-- Chagua --</option>${tenantOptions}</select></div>
           <div class="db-field"><label>Tarehe ya malipo</label><input id="pay-date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
-          <div class="db-field"><label>Analipia mwezi gani</label><input id="pay-month" type="month" value="${new Date().toISOString().slice(0,7)}"></div>
           <div class="db-field"><label>Kiasi</label><input id="pay-amount" type="number" placeholder="mfano: 150000"></div>
           <div class="db-field"><label>Maelezo (si lazima)</label><input id="pay-notes" placeholder="mfano: malipo ya nusu"></div>
         </div>
@@ -2662,21 +2689,22 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
     `;
 
     bindSearchInput('search-malipo', v=>{ searchMalipo=v; });
-    bindEnterToClick(['pay-date','pay-month','pay-amount','pay-notes'], 'save-payment');
+    bindEnterToClick(['pay-date','pay-amount','pay-notes'], 'save-payment');
 
     document.getElementById('save-payment').addEventListener('click', async ()=>{
       const tenantId = document.getElementById('pay-tenant').value;
       const date = document.getElementById('pay-date').value;
-      const forMonth = document.getElementById('pay-month').value;
       const amount = document.getElementById('pay-amount').value;
       const notes = document.getElementById('pay-notes').value.trim();
       if(!tenantId){ toast('Chagua mpangaji'); return; }
-      if(!date || !forMonth){ toast('Jaza tarehe na mwezi'); return; }
+      if(!date){ toast('Jaza tarehe'); return; }
       if(!amount || Number(amount)<=0){ toast('Andika kiasi sahihi'); return; }
       const t = tenants.find(x=>x.id===tenantId);
-      payments.push({id: uid(), tenantId, roomId: t.roomId, date, forMonth, amount, notes});
+      if(!t.rentAmount){ toast('Weka kwanza kodi ya mwezi ya mpangaji huyu (kwenye Hariri) ili mgawanyo wa kiotomatiki ufanye kazi'); return; }
+      const newRecords = allocatePaymentAuto(t, date, amount, notes);
+      payments.push(...newRecords);
       await savePayments();
-      toast('Malipo yamehifadhiwa');
+      toast(newRecords.length>1 ? `Malipo yamegawiwa kwa miezi ${newRecords.length}` : 'Malipo yamehifadhiwa');
       renderMalipo();
     });
 
