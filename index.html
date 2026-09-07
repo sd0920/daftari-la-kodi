@@ -849,6 +849,17 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
     return payments.filter(p=>p.tenantId===tenantId && p.forMonth===ym)
       .reduce((s,p)=>s+Number(p.amount||0),0);
   }
+  // Inapanga malipo kama daftari halisi: kwa mwezi analipia (mapema kwanza),
+  // si kwa tarehe aliyolipa — ili Mei ionekane kabla ya Juni hata kama
+  // zililipwa siku moja au tarehe tofauti.
+  function sortPaymentsForDisplay(list){
+    return list.slice().sort((a,b)=>{
+      const ym = (a.forMonth||'').localeCompare(b.forMonth||'');
+      if(ym !== 0) return ym;
+      return (a.date||'').localeCompare(b.date||'');
+    });
+  }
+
   function paidTotalFor(tenantId){
     return payments.filter(p=>p.tenantId===tenantId)
       .reduce((s,p)=>s+Number(p.amount||0),0);
@@ -1572,9 +1583,9 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
     }
     const d = debtBreakdown(t);
     const rent = Number(t.rentAmount||0);
-    const history = payments.filter(p=>p.tenantId===t.id).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-    const lastPayment = history[0];
-    const histRowsHtml = history.slice(0,15).map(p=>'<tr><td class="db-mono">'+fmtDate(p.date)+'</td><td>'+fmtMonth(p.forMonth)+'</td><td class="db-mono">'+money(p.amount)+'</td></tr>').join('');
+    const history = sortPaymentsForDisplay(payments.filter(p=>p.tenantId===t.id));
+    const lastPayment = history.length ? history.reduce((a,b)=> ((b.date||'') > (a.date||'') ? b : a)) : null;
+    const histRowsHtml = history.slice(-15).map(p=>'<tr><td class="db-mono">'+fmtDate(p.date)+'</td><td>'+fmtMonth(p.forMonth)+'</td><td class="db-mono">'+money(p.amount)+'</td></tr>').join('');
     const histTableHtml = history.length
       ? ('<table class="db-table"><thead><tr><th>Tarehe</th><th>Mwezi</th><th>Kiasi</th></tr></thead><tbody>'+histRowsHtml+'</tbody></table>')
       : '<div class="db-empty">Bado hakuna malipo yaliyorekodiwa.</div>';
@@ -2576,7 +2587,7 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
     const paid = paidTotalFor(t.id);
     const d = debtBreakdown(t);
     const months = monthsElapsed(t);
-    const history = payments.filter(p=>p.tenantId===t.id).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const history = sortPaymentsForDisplay(payments.filter(p=>p.tenantId===t.id));
 
     const statementText = buildStatementForTenant(t);
     const waLink = t.phone ? ('https://wa.me/'+toIntlPhone(t.phone)+'?text='+encodeURIComponent(statementText)) : '';
@@ -2649,7 +2660,7 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
   function renderMalipo(){
     const tenantOptions = tenants.map(t=>`<option value="${t.id}">${t.name} — ${propertyName(propertyOfRoom(t.roomId))} / ${roomName(t.roomId)}</option>`).join('');
 
-    const sorted = payments.slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+    const sorted = sortPaymentsForDisplay(payments);
     const filteredPayments = searchMalipo
       ? sorted.filter(p=>{
           const q = searchMalipo.toLowerCase();
