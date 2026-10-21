@@ -530,6 +530,7 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
   let authError = '';
   let regAgreed = false;
   let feedbackDraft = '';
+  let pendingRentChoice = {};
   let pendingRoomChoice = {};   // regId -> roomId chosen by landlord before verifying
 
   const root = document.getElementById('daftari-root');
@@ -1780,10 +1781,11 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
         : '<span class="db-badge badge-left">Hana picha</span>';
       return '<tr><td>'+photoHtml+'</td><td>'+(p.name||'—')+'</td><td class="db-mono">'+(p.phone||'—')+'</td><td class="db-mono">'+(p.username||'—')+'</td><td class="db-mono">'+(submittedAt?fmtDate(submittedAt):'—')+'</td>'
         + '<td><select class="db-search" data-room-choice="'+regUid+'" style="max-width:220px;">'+opts+'</select></td>'
+        + '<td><input type="number" class="db-search" data-rent-choice="'+regUid+'" placeholder="Kodi/mwezi" value="'+(pendingRentChoice[regUid]||'')+'" style="max-width:120px;"></td>'
         + '<td><div class="db-actions-row"><button class="db-btn small" data-verify="'+regUid+'">Thibitisha</button><button class="db-btn danger small" data-reject="'+regUid+'">Kataa</button></div></td></tr>';
     }).join('');
     const tableHtml = pendingUids.length
-      ? ('<table class="db-table"><thead><tr><th>Picha</th><th>Jina</th><th>Simu</th><th>Username</th><th>Aliomba</th><th>Mpe chumba</th><th></th></tr></thead><tbody>'+rowsHtml+'</tbody></table>')
+      ? ('<table class="db-table"><thead><tr><th>Picha</th><th>Jina</th><th>Simu</th><th>Username</th><th>Aliomba</th><th>Mpe chumba</th><th>Kodi ya mwezi</th><th></th></tr></thead><tbody>'+rowsHtml+'</tbody></table>')
       : '<div class="db-empty">Hakuna usajili unaosubiri kwa sasa.</div>';
 
     bodyEl.innerHTML = `
@@ -1794,17 +1796,22 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
     bodyEl.querySelectorAll('[data-room-choice]').forEach(sel=>{
       sel.addEventListener('change', (e)=>{ pendingRoomChoice[sel.dataset.roomChoice] = e.target.value; });
     });
+    bodyEl.querySelectorAll('[data-rent-choice]').forEach(inp=>{
+      inp.addEventListener('input', (e)=>{ pendingRentChoice[inp.dataset.rentChoice] = e.target.value; });
+    });
     bodyEl.querySelectorAll('[data-verify]').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         const regUid = btn.dataset.verify;
         const roomId = pendingRoomChoice[regUid];
         if(!roomId){ toast('Chagua chumba kwanza'); return; }
+        const rentChosen = String(pendingRentChoice[regUid]||'').trim();
+        if(!rentChosen || Number(rentChosen)<=0){ toast('Weka kodi ya mwezi ya mpangaji huyu'); return; }
         const p = userProfiles[regUid];
         if(!p){ toast('Taarifa za mpangaji huyu hazipatikani tena'); return; }
         const newTenantId = uid();
         tenants.push({
           id:newTenantId, name:p.name, phone:p.phone, roomId,
-          rentAmount:'', moveInDate: new Date().toISOString().slice(0,10),
+          rentAmount: rentChosen, moveInDate: new Date().toISOString().slice(0,10),
           notes:'', status:'active', moveOutDate:'', photoData: p.photoData || '',
           gender: p.gender||'', marital: p.marital||'', boys: p.boys||0, girls: p.girls||0,
           withParents: p.withParents||'', age: p.age||'', tribe: p.tribe||'', job: p.job||''
@@ -2417,7 +2424,9 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
         : `<span class="db-badge badge-left">Ametoka</span>`;
       const owed = totalOwed(t);
       const oweHtml = oweBadgeHtml(t);
-      const checkoutBtnHtml = t.status==='active' ? ('<button class="db-btn small" data-checkout="'+t.id+'">Ametoka</button>') : '';
+      const checkoutBtnHtml = t.status==='active'
+        ? ('<button class="db-btn small" data-checkout="'+t.id+'">Ametoka</button>')
+        : ('<button class="db-btn small" data-restore-tenant="'+t.id+'">Rudisha</button>');
       const createAcctBtnHtml = (t.status==='active' && !hasLoginAccount(t.id))
         ? ('<button class="db-btn secondary small" data-create-account="'+t.id+'">Tengeneza Akaunti</button>')
         : '';
@@ -2508,6 +2517,25 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
 
     bodyEl.querySelectorAll('[data-edit-tenant]').forEach(btn=>{
       btn.addEventListener('click', ()=>{ editingTenantId = btn.dataset.editTenant; renderWapangaji(); window.scrollTo(0,0); });
+    });
+    bodyEl.querySelectorAll('[data-restore-tenant]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const t = tenants.find(x=>x.id===btn.dataset.restoreTenant);
+        if(!t) return;
+        const occupant = tenants.find(x=>x.roomId===t.roomId && x.status==='active' && x.id!==t.id);
+        if(occupant){
+          alert('Chumba hiki sasa kina mpangaji mwingine ('+occupant.name+'). Mtoe huyo kwanza kabla ya kumrudisha '+t.name+'.');
+          return;
+        }
+        if(!confirm('Kumrudisha '+t.name+' kwenye chumba chake ('+roomName(t.roomId)+')? Historia yake yote ya malipo itabaki kama ilivyo.')) return;
+        t.status = 'active';
+        t.moveOutDate = '';
+        await saveTenants();
+        const linkedUid = Object.keys(userProfiles).find(u=>userProfiles[u].tenantId===t.id && userProfiles[u].status==='left');
+        if(linkedUid){ userProfiles[linkedUid].status = 'active'; await saveUserProfiles(); }
+        toast(t.name+' amerudishwa kwenye chumba chake');
+        renderWapangaji();
+      });
     });
     bodyEl.querySelectorAll('[data-checkout]').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
@@ -2711,11 +2739,14 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
       if(!date){ toast('Jaza tarehe'); return; }
       if(!amount || Number(amount)<=0){ toast('Andika kiasi sahihi'); return; }
       const t = tenants.find(x=>x.id===tenantId);
-      if(!t.rentAmount){ toast('Weka kwanza kodi ya mwezi ya mpangaji huyu (kwenye Hariri) ili mgawanyo wa kiotomatiki ufanye kazi'); return; }
       const newRecords = allocatePaymentAuto(t, date, amount, notes);
       payments.push(...newRecords);
       await savePayments();
-      toast(newRecords.length>1 ? `Malipo yamegawiwa kwa miezi ${newRecords.length}` : 'Malipo yamehifadhiwa');
+      if(!t.rentAmount){
+        toast('Malipo yamehifadhiwa. Weka kodi ya mwezi (Wapangaji > Hariri) ili yagawiwe kiotomatiki kwa miezi.');
+      } else {
+        toast(newRecords.length>1 ? `Malipo yamegawiwa kwa miezi ${newRecords.length}` : 'Malipo yamehifadhiwa');
+      }
       renderMalipo();
     });
 
