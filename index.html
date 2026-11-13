@@ -502,6 +502,7 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
   let payments = [];
   let properties = [];
   let landlordInfo = {name:'', phone:'', email:'', photoData:''};
+  let utilityRecords = [];
   let siteContent = {businessName:'', vision:'', mission:'', about:'', location:'', email:'ifatad23@gmail.com', footerText:'', heroImageUrl:''};
   let activeTab = 'muhtasari';
   let dashMonth = new Date().toISOString().slice(0,7);
@@ -644,6 +645,7 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
     appConfig = (await getJSONWithRetry('appConfig')) || {};
     siteContent = (await getJSONWithRetry('siteContent')) || {businessName:'', vision:'', mission:'', about:'', location:'', email:'ifatad23@gmail.com', footerText:'', heroImageUrl:''};
     if(!siteContent.email) siteContent.email = 'ifatad23@gmail.com';
+    utilityRecords = (await getJSONWithRetry('utilityRecords')) || [];
   }
   async function saveRooms(){ await setJSON('rooms', rooms); }
   async function saveTenants(){ await setJSON('tenants', tenants); }
@@ -652,6 +654,7 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
   async function saveLandlordInfo(){ await setJSON('landlordInfo', landlordInfo); }
   async function saveAdminPin(){ await setJSON('adminPin', adminPin); }
   async function saveSiteContent(){ await setJSON('siteContent', siteContent); }
+  async function saveUtilityRecords(){ await setJSON('utilityRecords', utilityRecords); }
   async function saveUserProfiles(){ await setJSON('userProfiles', userProfiles); }
   async function savePendingRegistrations(){ await setJSON('pendingRegistrations', pendingRegistrations); }
   async function saveFeedback(){ await setJSON('feedback', feedbackList); }
@@ -1060,6 +1063,7 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
     {id:'vyumba', label:'Vyumba'},
     {id:'wapangaji', label:'Wapangaji'},
     {id:'malipo', label:'Malipo'},
+    {id:'huduma', label:'Maji/Umeme'},
     {id:'uthibitishaji', label:'Uthibitishaji'},
     {id:'maoni', label:'Maoni'},
     {id:'nakala', label:'Nakala'},
@@ -1129,6 +1133,7 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
     else if(activeTab==='maoni') renderMaoni();
     else if(activeTab==='nakala') renderNakala();
     else if(activeTab==='tovuti') renderTovuti();
+    else if(activeTab==='huduma') renderHuduma();
     else if(activeTab==='mipangilio') renderMipangilio();
     else { activeTab='muhtasari'; renderMuhtasari(); }
   }
@@ -1217,6 +1222,15 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
           5. Taarifa ya kutoka lazima itolewe angalau mwezi mmoja (1) kabla.<br>
           6. Mwenye nyumba anaweza kufanya ukaguzi wa chumba kwa taarifa ya awali.<br>
           7. Kelele na matukio yanayosumbua majirani hayaruhusiwi.<br>
+          8. Mpangaji analazimika kulipa kodi kabla ya au siku ya kwanza ya kila mwezi. Kuchelewa kulipa kodi kutasababisha adhabu ya asilimia tano (5%) ya kodi ya mwezi huo.<br>
+          9. Mpangaji hataruhusiwa kupangisha au kukaribisha wakazi wengine ndani ya chumba bila idhini ya maandishi kutoka kwa mwenye nyumba.<br>
+          10. Uharibifu wowote wa makusudi au wa uzembe utakaosababishwa na mpangaji au wageni wake utagharamiwa kikamilifu na mpangaji.<br>
+          11. Mpangaji hataruhusiwa kufanya mabadiliko au marekebisho makubwa ya chumba (kuvunja, kujenga, kubadilisha milango au mifumo ya maji na umeme) bila idhini ya maandishi kutoka kwa mwenye nyumba.<br>
+          12. Mpangaji atalazimika kutoa notisi ya maandishi ya siku thelathini (30) kabla ya tarehe ya kuondoka. Kushindwa kutoa notisi kutasababisha kupoteza sehemu ya amana.<br>
+          13. Amana itarudishwa kwa mpangaji baada ya kuondoka na chumba kukaguliwa, ikitolewa gharama za uharibifu au madeni ya kodi yaliyobaki, kama yapo.<br>
+          14. Mwenye nyumba ana haki ya kukagua hali ya chumba baada ya kutoa notisi ya saa ishirini na nne (24) mapema, isipokuwa ni dharura.<br>
+          15. Mpangaji atatunza usafi wa chumba na maeneo ya pamoja kwa wakati wote wa upangaji.<br>
+          16. Mkataba huu utafuata sheria za Tanzania za Upangaji na Usimamizi wa Mali.<br>
           <em>Haya ni masharti ya jumla — mwenye nyumba anaweza kuongeza masharti maalum baada ya uthibitisho.</em>
         </div>
         <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;margin-bottom:16px;">
@@ -1621,6 +1635,7 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
         <div class="db-card"><div class="db-card-num" style="color:${d&&d.arrears>0?'var(--unpaid)':'var(--paid)'}">${d?(d.arrears>0?money(d.arrears):'0'):'—'}</div><div class="db-card-label">Deni la nyuma</div></div>
       </div>
       <div class="db-table-wrap">${histTableHtml}</div>
+      ${tenantUtilityHtml(t.id)}
 
       <div class="db-form">
         <div class="db-section-title">Profaili Yangu</div>
@@ -1892,7 +1907,7 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
       const backup = {
         exportedAt: new Date().toISOString(),
         rooms, tenants, payments, properties, landlordInfo,
-        userProfiles, pendingRegistrations, feedback: feedbackList, appConfig, siteContent
+        userProfiles, pendingRegistrations, feedback: feedbackList, appConfig, siteContent, utilityRecords
       };
       const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
       const url = URL.createObjectURL(blob);
@@ -1926,9 +1941,10 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
         if(data.feedback) feedbackList = data.feedback;
         if(data.appConfig) appConfig = data.appConfig;
         if(data.siteContent) siteContent = data.siteContent;
+        if(data.utilityRecords) utilityRecords = data.utilityRecords;
         await saveRooms(); await saveTenants(); await savePayments(); await saveProperties();
         await saveLandlordInfo(); await saveUserProfiles(); await savePendingRegistrations();
-        await saveFeedback(); await saveAppConfig(); await saveSiteContent();
+        await saveFeedback(); await saveAppConfig(); await saveSiteContent(); await saveUtilityRecords();
         toast('Data imerejeshwa kikamilifu kutoka kwenye nakala');
         renderNakala();
       }catch(e){
@@ -1938,6 +1954,148 @@ const UPDATE_DATA_V2 = {"tenants":[{"id":"tenant_room_No01","name":"MARTHA MANYO
   }
 
   // ---------- MIPANGILIO YA TOVUTI (Ukurasa wa Nyumbani) ----------
+  // ---------- MAJI NA UMEME (tofauti na kodi ya nyumba) ----------
+  let hdSearch = '';
+  let hdLastTenant = '';
+  function utilityBalance(tenantId, type){
+    return utilityRecords
+      .filter(r=>r.tenantId===tenantId && r.type===type)
+      .reduce((s,r)=> s + (r.kind==='charge' ? 1 : -1) * Number(r.amount||0), 0);
+  }
+  function utilityTypeLabel(type){ return type==='maji' ? 'Maji' : 'Umeme'; }
+  function utilityBalCell(tenantId, type){
+    const has = utilityRecords.some(r=>r.tenantId===tenantId && r.type===type);
+    if(!has) return '—';
+    const v = utilityBalance(tenantId, type);
+    if(v > 0) return '<span class="db-badge badge-unpaid">'+money(v)+'</span>';
+    if(v < 0) return '<span class="db-badge badge-partial">Ziada '+money(-v)+'</span>';
+    return '<span class="db-badge badge-paid">Sawa</span>';
+  }
+  function tenantUtilityHtml(tenantId){
+    const recs = utilityRecords.filter(r=>r.tenantId===tenantId)
+      .sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,10);
+    if(!recs.length) return '';
+    const m = utilityBalance(tenantId,'maji'), u = utilityBalance(tenantId,'umeme');
+    const rows = recs.map(r=>'<tr><td class="db-mono">'+fmtDate(r.date)+'</td><td>'+utilityTypeLabel(r.type)+'</td><td>'+(r.kind==='charge' ? 'Bili'+(r.month?' ('+fmtMonth(r.month)+')':'') : 'Malipo')+'</td><td class="db-mono">'+money(r.amount)+'</td><td>'+(r.notes||'—')+'</td></tr>').join('');
+    return '<div class="db-section-title" style="margin-top:18px;">Maji na Umeme</div>'
+      + '<div class="db-cards">'
+      + '<div class="db-card"><div class="db-card-num" style="color:'+(m>0?'var(--unpaid)':'var(--paid)')+'">'+(m>0?money(m):'0')+'</div><div class="db-card-label">Deni la Maji</div></div>'
+      + '<div class="db-card"><div class="db-card-num" style="color:'+(u>0?'var(--unpaid)':'var(--paid)')+'">'+(u>0?money(u):'0')+'</div><div class="db-card-label">Deni la Umeme</div></div>'
+      + '</div>'
+      + '<div class="db-table-wrap"><table class="db-table"><thead><tr><th>Tarehe</th><th>Aina</th><th>Kitendo</th><th>Kiasi</th><th>Maelezo</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
+  function renderHuduma(){
+    const today = new Date().toISOString().slice(0,10);
+    const withRecords = new Set(utilityRecords.map(r=>r.tenantId));
+    const listed = tenants.filter(t=> t.status==='active' || withRecords.has(t.id))
+      .slice().sort((a,b)=> String(a.name).localeCompare(String(b.name)));
+    const tenantOpts = '<option value="">-- Chagua --</option>' + listed.map(t=>'<option value="'+t.id+'"'+(hdLastTenant===t.id?' selected':'')+'>'+t.name+' — '+propertyName(propertyOfRoom(t.roomId))+' / '+roomName(t.roomId)+(t.status==='active'?'':' (ametoka)')+'</option>').join('');
+
+    let totalMaji = 0, totalUmeme = 0;
+    listed.forEach(t=>{ totalMaji += Math.max(0, utilityBalance(t.id,'maji')); totalUmeme += Math.max(0, utilityBalance(t.id,'umeme')); });
+
+    const q = hdSearch.toLowerCase();
+    const shown = listed.filter(t=> !q || String(t.name).toLowerCase().includes(q) || roomName(t.roomId).toLowerCase().includes(q) || propertyName(propertyOfRoom(t.roomId)).toLowerCase().includes(q));
+    const summaryRows = shown.map(t=>{
+      const m = utilityBalance(t.id,'maji'), u = utilityBalance(t.id,'umeme');
+      const owes = Math.max(0,m) + Math.max(0,u);
+      let remind = '';
+      if(owes > 0 && t.phone){
+        const msg = [
+          (siteContent.businessName || landlordInfo.name || null),
+          'TAARIFA YA MAJI NA UMEME',
+          'Tarehe: ' + fmtDate(today),
+          '',
+          'Jina: ' + t.name,
+          'Nyumba: ' + propertyName(propertyOfRoom(t.roomId)),
+          'Chumba: ' + roomName(t.roomId),
+          'Maji: Tsh ' + money(Math.max(0,m)),
+          'Umeme: Tsh ' + money(Math.max(0,u)),
+          'JUMLA UNADAIWA: Tsh ' + money(owes),
+          '',
+          'Tafadhali lipa mapema.',
+          (landlordInfo.phone ? 'Kwa maswali wasiliana: ' + landlordInfo.phone : null)
+        ].filter(x=>x!==null).join('\n');
+        remind = '<a class="db-btn small" style="background:#2F6B4F;text-decoration:none;display:inline-block;" href="https://wa.me/'+toIntlPhone(t.phone)+'?text='+encodeURIComponent(msg)+'" target="_blank">Kumbusha (WhatsApp)</a>';
+      }
+      return '<tr><td>'+t.name+(t.status==='active'?'':' <span class="db-badge badge-left">Ametoka</span>')+'</td><td>'+propertyName(propertyOfRoom(t.roomId))+'</td><td>'+roomName(t.roomId)+'</td><td>'+utilityBalCell(t.id,'maji')+'</td><td>'+utilityBalCell(t.id,'umeme')+'</td><td>'+remind+'</td></tr>';
+    }).join('');
+    const summaryTable = shown.length
+      ? '<table class="db-table"><thead><tr><th>Mpangaji</th><th>Nyumba</th><th>Chumba</th><th>Maji</th><th>Umeme</th><th></th></tr></thead><tbody>'+summaryRows+'</tbody></table>'
+      : '<div class="db-empty">Hakuna mpangaji aliyepatikana.</div>';
+
+    const tenantById = {}; tenants.forEach(t=>{ tenantById[t.id] = t; });
+    const histRecs = utilityRecords.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''))
+      .filter(r=> !q || (tenantById[r.tenantId] && String(tenantById[r.tenantId].name).toLowerCase().includes(q)));
+    const histRows = histRecs.map(r=>{
+      const tn = tenantById[r.tenantId] ? tenantById[r.tenantId].name : '—';
+      return '<tr><td class="db-mono">'+fmtDate(r.date)+'</td><td>'+tn+'</td><td>'+utilityTypeLabel(r.type)+'</td><td>'+(r.kind==='charge' ? 'Bili'+(r.month?' ('+fmtMonth(r.month)+')':'') : 'Malipo')+'</td><td class="db-mono">'+money(r.amount)+'</td><td>'+(r.notes||'—')+'</td><td><button class="db-btn danger small" data-del-util="'+r.id+'">Futa</button></td></tr>';
+    }).join('');
+    const histTable = histRecs.length
+      ? '<table class="db-table"><thead><tr><th>Tarehe</th><th>Mpangaji</th><th>Aina</th><th>Kitendo</th><th>Kiasi</th><th>Maelezo</th><th></th></tr></thead><tbody>'+histRows+'</tbody></table>'
+      : '<div class="db-empty">Bado hakuna rekodi za maji au umeme.</div>';
+
+    bodyEl.innerHTML = `
+      <div class="db-cards">
+        <div class="db-card"><div class="db-card-num" style="color:var(--unpaid)">${money(totalMaji)}</div><div class="db-card-label">Maji yanayodaiwa (jumla)</div></div>
+        <div class="db-card"><div class="db-card-num" style="color:var(--unpaid)">${money(totalUmeme)}</div><div class="db-card-label">Umeme unaodaiwa (jumla)</div></div>
+      </div>
+      <div class="db-form">
+        <div class="db-section-title">Rekodi Maji / Umeme</div>
+        <p style="font-size:12px;color:var(--ink-soft);margin:0 0 10px;">Hii ni tofauti na kodi ya nyumba — haiingii kwenye deni la kodi. Weka <strong>bili</strong> pale mpangaji anapodaiwa, na <strong>malipo</strong> pale anapolipa.</p>
+        <div class="db-form-grid">
+          <div class="db-field"><label>Mpangaji</label><select id="hd-tenant">${tenantOpts}</select></div>
+          <div class="db-field"><label>Aina</label><select id="hd-type"><option value="maji">Maji</option><option value="umeme">Umeme</option></select></div>
+          <div class="db-field"><label>Unarekodi nini?</label><select id="hd-kind"><option value="charge">Bili mpya (anadaiwa)</option><option value="payment">Malipo (amelipa)</option></select></div>
+          <div class="db-field" id="hd-month-wrap"><label>Mwezi wa bili</label><input id="hd-month" type="month" value="${today.slice(0,7)}"></div>
+          <div class="db-field"><label>Tarehe</label><input id="hd-date" type="date" value="${today}"></div>
+          <div class="db-field"><label>Kiasi</label><input id="hd-amount" type="number" placeholder="mfano: 15000"></div>
+          <div class="db-field"><label>Maelezo (si lazima)</label><input id="hd-notes" placeholder="mfano: units 12"></div>
+        </div>
+        <button class="db-btn" id="hd-save">Hifadhi</button>
+      </div>
+      <div class="db-section-title"><span>Salio la kila mpangaji</span><input type="text" class="db-search" id="hd-search" placeholder="Tafuta jina, chumba..." value="${hdSearch}"></div>
+      <div class="db-table-wrap">${summaryTable}</div>
+      <div class="db-section-title">Historia ya Maji na Umeme</div>
+      <div class="db-table-wrap">${histTable}</div>
+    `;
+
+    bindSearchInput('hd-search', v=>{ hdSearch = v; });
+    bindEnterToClick(['hd-date','hd-amount','hd-notes'], 'hd-save');
+    document.getElementById('hd-tenant').addEventListener('change', (e)=>{ hdLastTenant = e.target.value; });
+    document.getElementById('hd-kind').addEventListener('change', (e)=>{
+      document.getElementById('hd-month-wrap').style.display = (e.target.value==='charge') ? '' : 'none';
+    });
+    document.getElementById('hd-save').addEventListener('click', async ()=>{
+      const tenantId = document.getElementById('hd-tenant').value;
+      const type = document.getElementById('hd-type').value;
+      const kind = document.getElementById('hd-kind').value;
+      const month = document.getElementById('hd-month').value;
+      const date = document.getElementById('hd-date').value;
+      const amount = document.getElementById('hd-amount').value;
+      const notes = document.getElementById('hd-notes').value.trim();
+      if(!tenantId){ toast('Chagua mpangaji'); return; }
+      if(!date){ toast('Jaza tarehe'); return; }
+      if(!amount || Number(amount) <= 0){ toast('Andika kiasi sahihi'); return; }
+      if(kind==='charge' && !month){ toast('Chagua mwezi wa bili'); return; }
+      const t = tenants.find(x=>x.id===tenantId);
+      utilityRecords.push({id: uid(), tenantId, roomId: t.roomId, type, kind, month: kind==='charge' ? month : '', date, amount: String(amount), notes});
+      await saveUtilityRecords();
+      hdLastTenant = tenantId;
+      toast(kind==='charge' ? 'Bili imehifadhiwa' : 'Malipo yamehifadhiwa');
+      renderHuduma();
+    });
+    bodyEl.querySelectorAll('[data-del-util]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        if(!confirm('Futa rekodi hii?')) return;
+        utilityRecords = utilityRecords.filter(r=>r.id!==btn.dataset.delUtil);
+        await saveUtilityRecords();
+        renderHuduma();
+      });
+    });
+  }
+
   function renderTovuti(){
     const s = siteContent;
     bodyEl.innerHTML = `
